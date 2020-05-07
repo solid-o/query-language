@@ -12,6 +12,7 @@ use Doctrine\ODM\PHPCR\Query\Builder\QueryBuilder;
 use Doctrine\ODM\PHPCR\Query\Builder\WhereAnd;
 use RuntimeException;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
+use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\PhpCr\NodeWalker;
 use function assert;
@@ -227,5 +228,13 @@ class Field implements FieldInterface
         assert(isset($this->mapping['targetDocument']));
 
         return $this->mapping['targetDocument'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOrder(object $queryBuilder, OrderExpression $orderExpression): array
+    {
+        return [ $this->fieldName, $orderExpression->getDirection() ];
     }
 }

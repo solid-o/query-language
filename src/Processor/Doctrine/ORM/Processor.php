@@ -73,7 +73,7 @@ class Processor extends AbstractProcessor
 
         if ($result->ordering !== null) {
             if ($this->options['continuation_token']) {
-                $iterator = new PagerIterator($this->queryBuilder, $this->parseOrderings($result->ordering));
+                $iterator = new PagerIterator($this->queryBuilder, $this->parseOrderings($this->queryBuilder, $result->ordering));
                 $iterator->setToken($result->pageToken);
                 if ($pageSize !== null) {
                     $iterator->setPageSize($pageSize);
@@ -82,7 +82,7 @@ class Processor extends AbstractProcessor
                 return $iterator;
             }
 
-            $fieldName = $this->columns[$result->ordering->getField()]->fieldName;
+            $fieldName = $this->fields[$result->ordering->getField()]->fieldName;
             $this->queryBuilder->orderBy($this->rootAlias . '.' . $fieldName, $result->ordering->getDirection());
         }
 
@@ -103,7 +103,7 @@ class Processor extends AbstractProcessor
         $this->queryBuilder->andWhere('1 = 1');
 
         foreach ($filters as $key => $expr) {
-            $column = $this->columns[$key];
+            $column = $this->fields[$key];
             $column->addCondition($this->queryBuilder, $expr);
         }
     }

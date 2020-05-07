@@ -7,6 +7,7 @@ namespace Solido\QueryLanguage\Processor\Doctrine\DBAL;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Types;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
+use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\DBAL\SqlWalker;
 use function is_string;
@@ -69,5 +70,13 @@ class Field implements FieldInterface
     public function getValidationWalker()
     {
         return $this->validationWalker;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOrder(object $queryBuilder, OrderExpression $orderExpression): array
+    {
+        return [ $this->fieldName, $orderExpression->getDirection() ];
     }
 }

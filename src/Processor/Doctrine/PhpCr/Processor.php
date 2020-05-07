@@ -41,7 +41,7 @@ class Processor extends AbstractProcessor
 
         $this->queryBuilder = $queryBuilder;
         $this->documentManager = $documentManager;
-        $this->columns = [];
+        $this->fields = [];
 
         $fromNode = $this->queryBuilder->getChildOfType(AbstractNode::NT_FROM);
         assert($fromNode instanceof From);
@@ -90,7 +90,7 @@ class Processor extends AbstractProcessor
 
         if ($result->ordering !== null) {
             if ($this->options['continuation_token']) {
-                $iterator = new PagerIterator($this->queryBuilder, $this->parseOrderings($result->ordering));
+                $iterator = new PagerIterator($this->queryBuilder, $this->parseOrderings($this->queryBuilder, $result->ordering));
                 $iterator->setToken($result->pageToken);
                 if ($pageSize !== null) {
                     $iterator->setPageSize($pageSize);
@@ -100,7 +100,7 @@ class Processor extends AbstractProcessor
             }
 
             $direction = $result->ordering->getDirection();
-            $fieldName = $this->columns[$result->ordering->getField()]->fieldName;
+            $fieldName = $this->fields[$result->ordering->getField()]->fieldName;
 
             $fromNode = $this->queryBuilder->getChildOfType(AbstractNode::NT_FROM);
             assert($fromNode instanceof From);
@@ -130,7 +130,7 @@ class Processor extends AbstractProcessor
     private function attachToQueryBuilder(array $filters): void
     {
         foreach ($filters as $key => $expr) {
-            $column = $this->columns[$key];
+            $column = $this->fields[$key];
             $column->addCondition($this->queryBuilder, $expr);
         }
     }

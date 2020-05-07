@@ -11,6 +11,7 @@ use Solido\QueryLanguage\Form\QueryType;
 use Solido\QueryLanguage\Grammar\Grammar;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface as DoctrineFieldInterface;
 use Solido\QueryLanguage\Processor\FieldInterface;
+use Solido\QueryLanguage\Processor\OrderableFieldInterface;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
@@ -26,7 +27,7 @@ use function strpos;
 abstract class AbstractProcessor
 {
     /** @var FieldInterface[] */
-    protected array $columns;
+    protected array $fields;
 
     /** @var mixed[] */
     protected array $options;
@@ -38,7 +39,7 @@ abstract class AbstractProcessor
     public function __construct(FormFactoryInterface $formFactory, array $options = [])
     {
         $this->options = $this->resolveOptions($options);
-        $this->columns = [];
+        $this->fields = [];
         $this->formFactory = $formFactory;
     }
 
@@ -60,7 +61,7 @@ abstract class AbstractProcessor
     public function addField(string $name, $options = []): self
     {
         if ($options instanceof FieldInterface) {
-            $this->columns[$name] = $options;
+            $this->fields[$name] = $options;
 
             return $this;
         }
@@ -87,7 +88,7 @@ abstract class AbstractProcessor
             $column->validationWalker = $options['validation_walker'];
         }
 
-        $this->columns[$name] = $column;
+        $this->fields[$name] = $column;
 
         return $this;
     }
@@ -105,9 +106,9 @@ abstract class AbstractProcessor
             'order_field' => $this->options['order_field'],
             'default_order' => $this->options['default_order'],
             'continuation_token_field' => $this->options['continuation_token']['field'] ?? null,
-            'columns' => $this->columns,
-            'orderable_columns' => array_keys(array_filter($this->columns, static function (FieldInterface $column): bool {
-                return $column instanceof DoctrineFieldInterface;
+            'columns' => $this->fields,
+            'orderable_columns' => array_keys(array_filter($this->fields, static function (FieldInterface $column): bool {
+                return $column instanceof OrderableFieldInterface;
             })),
         ];
 
@@ -143,23 +144,28 @@ abstract class AbstractProcessor
      *
      * @phpstan-return array<string, 'asc'|'desc'>
      */
-    protected function parseOrderings(OrderExpression $ordering): array
+    protected function parseOrderings(object $queryBuilder, OrderExpression $ordering): array
     {
+        $field = $this->fields[$ordering->getField()];
+
+        if (! ($field instanceof OrderableFieldInterface)) {
+            return [];
+        }
+
+        $order = $field->getOrder($queryBuilder, $ordering);
+
         $checksumField = $this->getIdentifierFieldNames()[0];
         if (isset($this->options['continuation_token']['checksum_field'])) {
             $checksumField = $this->options['continuation_token']['checksum_field'];
-            if (! $this->columns[$checksumField] instanceof PhpCr\Field && ! $this->columns[$checksumField] instanceof ORM\Field) {
+            if (! $this->fields[$checksumField] instanceof PhpCr\Field && ! $this->fields[$checksumField] instanceof ORM\Field) {
                 throw new InvalidArgumentException(sprintf('%s is not a valid field for checksum', $this->options['continuation_token']['checksum_field']));
             }
 
-            $checksumField = $this->columns[$checksumField]->fieldName;
+            $checksumField = $this->fields[$checksumField]->fieldName;
         }
 
-        $fieldName = $this->columns[$ordering->getField()]->fieldName;
-        $direction = $ordering->getDirection();
-
         return [
-            $fieldName => $direction,
+            $order[0] => $order[1],
             $checksumField => 'asc',
         ];
     }

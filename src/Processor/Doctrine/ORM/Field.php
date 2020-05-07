@@ -10,6 +10,7 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Solido\QueryLanguage\Exception\Doctrine\FieldNotFoundException;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
+use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\Doctrine\DiscriminatorWalker;
 use Solido\QueryLanguage\Walker\Doctrine\DqlWalker;
@@ -245,5 +246,13 @@ class Field implements FieldInterface
         }
 
         $this->associations = $associations;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOrder(object $queryBuilder, OrderExpression $orderExpression): array
+    {
+        return [ $this->fieldName, $orderExpression->getDirection() ];
     }
 }

@@ -12,6 +12,7 @@ use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
+use Solido\QueryLanguage\Processor\OrderableFieldInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -59,7 +60,7 @@ class Processor extends AbstractProcessor
 
         if ($result->ordering !== null) {
             if ($this->options['continuation_token']) {
-                $iterator = new PagerIterator($this->queryBuilder, $this->parseOrderings($result->ordering));
+                $iterator = new PagerIterator($this->queryBuilder, $this->parseOrderings($this->queryBuilder, $result->ordering));
                 $iterator->setToken($result->pageToken);
                 if ($pageSize !== null) {
                     $iterator->setPageSize($pageSize);
@@ -70,7 +71,7 @@ class Processor extends AbstractProcessor
 
             $sql = $this->queryBuilder->getSQL();
             $direction = $result->ordering->getDirection();
-            $fieldName = $this->columns[$result->ordering->getField()]->fieldName;
+            $fieldName = $this->fields[$result->ordering->getField()]->fieldName;
 
             $this->queryBuilder = $this->queryBuilder->getConnection()
                 ->createQueryBuilder()
@@ -108,34 +109,39 @@ class Processor extends AbstractProcessor
     /**
      * Parses the ordering expression for continuation token.
      *
+     * @param QueryBuilder $queryBuilder
+     *
      * @return array<string, string>
      *
      * @phpstan-return array<string, 'asc'|'desc'>
      */
-    protected function parseOrderings(OrderExpression $ordering): array
+    protected function parseOrderings(object $queryBuilder, OrderExpression $ordering): array
     {
         $checksumField = $this->options['continuation_token']['checksum_field'] ?? $this->getIdentifierFieldNames()[0] ?? null;
-        $column = $this->columns[$ordering->getField()];
+        $field = $this->fields[$ordering->getField()];
+
+        if (! ($field instanceof OrderableFieldInterface)) {
+            return [];
+        }
+
+        $order = $field->getOrder($queryBuilder, $ordering);
 
         if ($checksumField === null) {
-            foreach ($this->columns as $column) {
-                if ($checksumField === $column) {
+            foreach ($this->fields as $field) {
+                if ($checksumField === $field) {
                     continue;
                 }
 
-                $checksumField = $column;
+                $checksumField = $field;
                 break;
             }
         }
 
         $checksumField = $checksumField instanceof FieldInterface ? $checksumField->fieldName : $checksumField;
-        $fieldName = $column->fieldName;
-        $direction = $ordering->getDirection();
-
         assert(is_string($checksumField));
 
         return [
-            $fieldName => $direction,
+            $order[0] => $order[1],
             $checksumField => 'asc',
         ];
     }
@@ -159,7 +165,7 @@ class Processor extends AbstractProcessor
         $this->queryBuilder->andWhere('1 = 1');
 
         foreach ($filters as $key => $expr) {
-            $column = $this->columns[$key];
+            $column = $this->fields[$key];
             $column->addCondition($this->queryBuilder, $expr);
         }
     }
