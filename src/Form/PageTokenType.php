@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Form;
 
@@ -17,9 +19,6 @@ class PageTokenType extends AbstractType
         $builder->addViewTransformer(new PageTokenTransformer());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getParent(): ?string
     {
         return TextType::class;

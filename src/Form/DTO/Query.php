@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Form\DTO;
 
@@ -13,14 +15,10 @@ class Query
     public ?int $skip;
     public ?int $limit;
 
-    /**
-     * @var ExpressionInterface[]
-     */
+    /** @var ExpressionInterface[] */
     public array $filters;
 
-    /**
-     * @Assert\Type(OrderExpression::class)
-     */
+    /** @Assert\Type(OrderExpression::class) */
     public ?OrderExpression $ordering;
 
     public function __construct()
