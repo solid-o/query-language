@@ -6,7 +6,7 @@ namespace Solido\QueryLanguage\Form;
 
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Form\DTO\Query;
-use Solido\QueryLanguage\Processor\ColumnInterface;
+use Solido\QueryLanguage\Processor\FieldInterface;
 use Solido\QueryLanguage\Validator\Expression;
 use Solido\QueryLanguage\Walker\Validation\OrderWalker;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
@@ -75,7 +75,7 @@ class QueryType extends AbstractType
         }
 
         foreach ($options['columns'] as $key => $column) {
-            assert($column instanceof ColumnInterface);
+            assert($column instanceof FieldInterface);
             $builder->add($key, FieldType::class, [
                 'constraints' => [
                     new Expression($column->getValidationWalker()),

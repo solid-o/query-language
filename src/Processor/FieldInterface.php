@@ -9,7 +9,7 @@ use Solido\QueryLanguage\Expression\ExpressionInterface;
 /**
  * @property string $fieldName
  */
-interface ColumnInterface
+interface FieldInterface
 {
     /**
      * Adds condition to query builder.

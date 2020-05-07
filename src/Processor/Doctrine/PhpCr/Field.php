@@ -12,7 +12,7 @@ use Doctrine\ODM\PHPCR\Query\Builder\QueryBuilder;
 use Doctrine\ODM\PHPCR\Query\Builder\WhereAnd;
 use RuntimeException;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
-use Solido\QueryLanguage\Processor\Doctrine\ColumnInterface;
+use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\PhpCr\NodeWalker;
 use function assert;
 use function count;
@@ -21,7 +21,7 @@ use function is_string;
 /**
  * @internal
  */
-class Column implements ColumnInterface
+class Field implements FieldInterface
 {
     private string $rootAlias;
     private string $fieldType;

@@ -12,7 +12,7 @@ use Refugis\DoctrineExtra\ORM\EntityIterator;
 use Solido\Pagination\Doctrine\ORM\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
-use Solido\QueryLanguage\Processor\Doctrine\ColumnInterface;
+use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
@@ -41,9 +41,9 @@ class Processor extends AbstractProcessor
         $this->rootEntity = $this->entityManager->getClassMetadata($this->queryBuilder->getRootEntities()[0]);
     }
 
-    protected function createColumn(string $fieldName): ColumnInterface
+    protected function createField(string $fieldName): FieldInterface
     {
-        return new Column($fieldName, $this->rootAlias, $this->rootEntity, $this->entityManager);
+        return new Field($fieldName, $this->rootAlias, $this->rootEntity, $this->entityManager);
     }
 
     /**

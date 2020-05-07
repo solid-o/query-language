@@ -15,7 +15,7 @@ use Refugis\DoctrineExtra\ODM\PhpCr\DocumentIterator;
 use Solido\Pagination\Doctrine\PhpCr\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
-use Solido\QueryLanguage\Processor\Doctrine\ColumnInterface;
+use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -55,9 +55,9 @@ class Processor extends AbstractProcessor
         $this->rootAlias = $sourceNode->getAlias();
     }
 
-    protected function createColumn(string $fieldName): ColumnInterface
+    protected function createField(string $fieldName): FieldInterface
     {
-        return new Column($fieldName, $this->rootAlias, $this->rootDocument, $this->documentManager);
+        return new Field($fieldName, $this->rootAlias, $this->rootDocument, $this->documentManager);
     }
 
     /**

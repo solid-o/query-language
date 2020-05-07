@@ -10,7 +10,7 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Solido\QueryLanguage\Exception\Doctrine\FieldNotFoundException;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
-use Solido\QueryLanguage\Processor\Doctrine\ColumnInterface;
+use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\Doctrine\DiscriminatorWalker;
 use Solido\QueryLanguage\Walker\Doctrine\DqlWalker;
 use Solido\QueryLanguage\Walker\Validation\EnumWalker;
@@ -21,7 +21,7 @@ use function is_string;
 /**
  * @internal
  */
-class Column implements ColumnInterface
+class Field implements FieldInterface
 {
     private string $rootAlias;
     private string $columnType;

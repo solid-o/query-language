@@ -12,7 +12,7 @@ use Refugis\DoctrineExtra\ODM\PhpCr\DocumentIterator;
 use Solido\Common\Form\AutoSubmitRequestHandler;
 use Solido\Pagination\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
-use Solido\QueryLanguage\Processor\ColumnInterface;
+use Solido\QueryLanguage\Processor\FieldInterface;
 use Solido\QueryLanguage\Processor\Doctrine\PhpCr\Processor;
 use Solido\QueryLanguage\Tests\Doctrine\PhpCr\FixturesTrait;
 use Solido\QueryLanguage\Tests\Fixtures\Document\FooBar;
@@ -50,7 +50,7 @@ class ProcessorTest extends TestCase
 
     public function testBuiltinColumnWorks(): void
     {
-        $this->processor->addColumn('name');
+        $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['name' => 'goofy']));
 
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
@@ -63,7 +63,7 @@ class ProcessorTest extends TestCase
 
     public function testBuiltinLikeColumnWorks(): void
     {
-        $this->processor->addColumn('name');
+        $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['name' => '$like(GOOFY)']));
 
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
@@ -76,7 +76,7 @@ class ProcessorTest extends TestCase
 
     public function testBuiltinOrColumnWorks(): void
     {
-        $this->processor->addColumn('name');
+        $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['name' => '$or(goofy, barbar)']));
 
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
@@ -91,7 +91,7 @@ class ProcessorTest extends TestCase
 
     public function testBuiltinNotColumnWorks(): void
     {
-        $this->processor->addColumn('name');
+        $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['name' => '$not($or(goofy, barbar))']));
 
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
@@ -114,7 +114,7 @@ class ProcessorTest extends TestCase
             ['order_field' => 'order']
         );
 
-        $this->processor->addColumn('name');
+        $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['order' => '$order(name, desc)']));
 
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
@@ -137,7 +137,7 @@ class ProcessorTest extends TestCase
             ['order_field' => 'order']
         );
 
-        $this->processor->addColumn('name');
+        $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['order' => '$order(name, desc)']));
         assert($itr instanceof PagerIterator);
 
@@ -155,7 +155,7 @@ class ProcessorTest extends TestCase
             ['order_field' => 'order']
         );
 
-        $this->processor->addColumn('name');
+        $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['order' => '$order(name, desc)', 'continue' => '=Zm9vYmFy_1_12r6se5']));
         assert($itr instanceof PagerIterator);
 
@@ -169,7 +169,7 @@ class ProcessorTest extends TestCase
 
     public function testRelationColumnWorks(): void
     {
-        $this->processor->addColumn('foobar');
+        $this->processor->addField('foobar');
         $itr = $this->processor->processRequest(new Request(['foobar' => '$entry(foobar, foobar_donald duck)']));
 
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
@@ -182,7 +182,7 @@ class ProcessorTest extends TestCase
 
     public function testColumnWithFieldInRelatedEntityWorks(): void
     {
-        $this->processor->addColumn('foobar', ['field_name' => 'foobar.foobar']);
+        $this->processor->addField('foobar', ['field_name' => 'foobar.foobar']);
         $itr = $this->processor->processRequest(new Request(['foobar' => 'foobar_donald duck']));
 
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
@@ -221,7 +221,7 @@ class ProcessorTest extends TestCase
             ]
         );
 
-        $this->processor->addColumn('name');
+        $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request($params));
 
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
@@ -249,7 +249,7 @@ class ProcessorTest extends TestCase
             ],
         );
 
-        $this->processor->addColumn('name');
+        $this->processor->addField('name');
         $this->processor->setDefaultPageSize(3);
         $this->processor->processRequest(new Request([]));
     }
@@ -283,7 +283,7 @@ class ProcessorTest extends TestCase
             ],
         );
 
-        $this->processor->addColumn('name');
+        $this->processor->addField('name');
         $this->processor->setDefaultPageSize(3);
         $itr = $this->processor->processRequest(new Request([]));
 
@@ -312,7 +312,7 @@ class ProcessorTest extends TestCase
             ],
         );
 
-        $this->processor->addColumn('name');
+        $this->processor->addField('name');
         $this->processor->setDefaultPageSize(3);
         $itr = $this->processor->processRequest(new Request([]));
 
@@ -321,7 +321,7 @@ class ProcessorTest extends TestCase
 
     public function testCustomColumnWorks(): void
     {
-        $this->processor->addColumn('foobar', new class(self::$documentManager) implements ColumnInterface {
+        $this->processor->addField('foobar', new class(self::$documentManager) implements FieldInterface {
             /** @var DocumentManagerInterface */
             private $documentManager;
 

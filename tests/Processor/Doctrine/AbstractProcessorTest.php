@@ -11,7 +11,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Form\QueryType;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
-use Solido\QueryLanguage\Processor\Doctrine\ColumnInterface;
+use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Tests\Processor\DummyColumn;
 use Solido\QueryLanguage\Walker\Validation\OrderWalker;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -54,7 +54,7 @@ class AbstractProcessorTest extends TestCase
 
 class ConcreteProcessor extends AbstractProcessor
 {
-    protected function createColumn(string $fieldName): ColumnInterface
+    protected function createField(string $fieldName): FieldInterface
     {
         return new DummyColumn();
     }

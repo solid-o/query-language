@@ -7,14 +7,14 @@ namespace Solido\QueryLanguage\Processor\Doctrine\DBAL;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Types;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
-use Solido\QueryLanguage\Processor\Doctrine\ColumnInterface;
+use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\DBAL\SqlWalker;
 use function is_string;
 
 /**
  * @internal
  */
-class Column implements ColumnInterface
+class Field implements FieldInterface
 {
     private string $columnType;
     public string $fieldName;

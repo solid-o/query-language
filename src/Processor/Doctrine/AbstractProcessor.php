@@ -9,8 +9,8 @@ use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Form\QueryType;
 use Solido\QueryLanguage\Grammar\Grammar;
-use Solido\QueryLanguage\Processor\ColumnInterface;
-use Solido\QueryLanguage\Processor\Doctrine\ColumnInterface as DoctrineColumnInterface;
+use Solido\QueryLanguage\Processor\Doctrine\FieldInterface as DoctrineFieldInterface;
+use Solido\QueryLanguage\Processor\FieldInterface;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
@@ -25,7 +25,7 @@ use function strpos;
 
 abstract class AbstractProcessor
 {
-    /** @var ColumnInterface[] */
+    /** @var FieldInterface[] */
     protected array $columns;
 
     /** @var mixed[] */
@@ -53,13 +53,13 @@ abstract class AbstractProcessor
     /**
      * Adds a column to this list processor.
      *
-     * @param array<null|string|callable>|ColumnInterface $options
+     * @param array<null|string|callable>|FieldInterface $options
      *
      * @return $this
      */
-    public function addColumn(string $name, $options = []): self
+    public function addField(string $name, $options = []): self
     {
-        if ($options instanceof ColumnInterface) {
+        if ($options instanceof FieldInterface) {
             $this->columns[$name] = $options;
 
             return $this;
@@ -77,7 +77,7 @@ abstract class AbstractProcessor
             ->setAllowedTypes('validation_walker', ['null', 'string', 'callable'])
             ->resolve($options);
 
-        $column = $this->createColumn($options['field_name']);
+        $column = $this->createField($options['field_name']);
 
         if ($options['walker'] !== null) {
             $column->customWalker = $options['walker'];
@@ -106,8 +106,8 @@ abstract class AbstractProcessor
             'default_order' => $this->options['default_order'],
             'continuation_token_field' => $this->options['continuation_token']['field'] ?? null,
             'columns' => $this->columns,
-            'orderable_columns' => array_keys(array_filter($this->columns, static function (ColumnInterface $column): bool {
-                return $column instanceof DoctrineColumnInterface;
+            'orderable_columns' => array_keys(array_filter($this->columns, static function (FieldInterface $column): bool {
+                return $column instanceof DoctrineFieldInterface;
             })),
         ];
 
@@ -125,9 +125,9 @@ abstract class AbstractProcessor
     }
 
     /**
-     * Creates a Column instance.
+     * Creates a Field instance.
      */
-    abstract protected function createColumn(string $fieldName): DoctrineColumnInterface;
+    abstract protected function createField(string $fieldName): DoctrineFieldInterface;
 
     /**
      * Gets the identifier field names from doctrine metadata.
@@ -145,14 +145,14 @@ abstract class AbstractProcessor
      */
     protected function parseOrderings(OrderExpression $ordering): array
     {
-        $checksumColumn = $this->getIdentifierFieldNames()[0];
+        $checksumField = $this->getIdentifierFieldNames()[0];
         if (isset($this->options['continuation_token']['checksum_field'])) {
-            $checksumColumn = $this->options['continuation_token']['checksum_field'];
-            if (! $this->columns[$checksumColumn] instanceof PhpCr\Column && ! $this->columns[$checksumColumn] instanceof ORM\Column) {
+            $checksumField = $this->options['continuation_token']['checksum_field'];
+            if (! $this->columns[$checksumField] instanceof PhpCr\Field && ! $this->columns[$checksumField] instanceof ORM\Field) {
                 throw new InvalidArgumentException(sprintf('%s is not a valid field for checksum', $this->options['continuation_token']['checksum_field']));
             }
 
-            $checksumColumn = $this->columns[$checksumColumn]->fieldName;
+            $checksumField = $this->columns[$checksumField]->fieldName;
         }
 
         $fieldName = $this->columns[$ordering->getField()]->fieldName;
@@ -160,7 +160,7 @@ abstract class AbstractProcessor
 
         return [
             $fieldName => $direction,
-            $checksumColumn => 'asc',
+            $checksumField => 'asc',
         ];
     }
 

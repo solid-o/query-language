@@ -11,7 +11,7 @@ use Solido\Pagination\Doctrine\DBAL\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
-use Solido\QueryLanguage\Processor\Doctrine\ColumnInterface;
+use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -87,14 +87,14 @@ class Processor extends AbstractProcessor
         return new RowIterator($this->queryBuilder);
     }
 
-    protected function createColumn(string $fieldName): ColumnInterface
+    protected function createField(string $fieldName): FieldInterface
     {
         $tableName = null;
         if (strpos($fieldName, '.') !== false) {
             [$tableName, $fieldName] = explode('.', $fieldName);
         }
 
-        return new Column($fieldName, $tableName);
+        return new Field($fieldName, $tableName);
     }
 
     /**
@@ -114,21 +114,21 @@ class Processor extends AbstractProcessor
      */
     protected function parseOrderings(OrderExpression $ordering): array
     {
-        $checksumColumn = $this->options['continuation_token']['checksum_field'] ?? $this->getIdentifierFieldNames()[0] ?? null;
+        $checksumField = $this->options['continuation_token']['checksum_field'] ?? $this->getIdentifierFieldNames()[0] ?? null;
         $column = $this->columns[$ordering->getField()];
 
-        if ($checksumColumn === null) {
+        if ($checksumField === null) {
             foreach ($this->columns as $column) {
-                if ($checksumColumn === $column) {
+                if ($checksumField === $column) {
                     continue;
                 }
 
-                $checksumColumn = $column;
+                $checksumField = $column;
                 break;
             }
         }
 
-        $checksumField = $checksumColumn instanceof ColumnInterface ? $checksumColumn->fieldName : $checksumColumn;
+        $checksumField = $checksumField instanceof FieldInterface ? $checksumField->fieldName : $checksumField;
         $fieldName = $column->fieldName;
         $direction = $ordering->getDirection();
 
