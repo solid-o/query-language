@@ -1,0 +1,166 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Solido\QueryLanguage\Processor\Doctrine\DBAL;
+
+use Doctrine\DBAL\Query\QueryBuilder;
+use Refugis\DoctrineExtra\DBAL\RowIterator;
+use Refugis\DoctrineExtra\ObjectIteratorInterface;
+use Solido\Pagination\Doctrine\DBAL\PagerIterator;
+use Solido\QueryLanguage\Expression\ExpressionInterface;
+use Solido\QueryLanguage\Expression\OrderExpression;
+use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
+use Solido\QueryLanguage\Processor\Doctrine\ColumnInterface;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use function array_values;
+use function assert;
+use function explode;
+use function is_string;
+use function strpos;
+
+class Processor extends AbstractProcessor
+{
+    private QueryBuilder $queryBuilder;
+
+    /** @var string[] */
+    private array $identifierFields;
+
+    /**
+     * @param mixed[] $options
+     */
+    public function __construct(QueryBuilder $queryBuilder, FormFactoryInterface $formFactory, array $options = [])
+    {
+        parent::__construct($formFactory, $options);
+
+        $this->identifierFields = array_values($this->options['identifiers']);
+        $this->queryBuilder = $queryBuilder;
+    }
+
+    /**
+     * @return ObjectIteratorInterface|FormInterface
+     */
+    public function processRequest(Request $request)
+    {
+        $result = $this->handleRequest($request);
+        if ($result instanceof FormInterface) {
+            return $result;
+        }
+
+        $this->attachToQueryBuilder($result->filters);
+        $pageSize = $this->options['default_page_size'] ?? $result->limit;
+
+        if ($result->skip !== null) {
+            $this->queryBuilder->setFirstResult($result->skip);
+        }
+
+        if ($result->ordering !== null) {
+            if ($this->options['continuation_token']) {
+                $iterator = new PagerIterator($this->queryBuilder, $this->parseOrderings($result->ordering));
+                $iterator->setToken($result->pageToken);
+                if ($pageSize !== null) {
+                    $iterator->setPageSize($pageSize);
+                }
+
+                return $iterator;
+            }
+
+            $sql = $this->queryBuilder->getSQL();
+            $direction = $result->ordering->getDirection();
+            $fieldName = $this->columns[$result->ordering->getField()]->fieldName;
+
+            $this->queryBuilder = $this->queryBuilder->getConnection()
+                ->createQueryBuilder()
+                ->select('*')
+                ->from('(' . $sql . ')', 'x')
+                ->setFirstResult($result->skip ?? 0)
+                ->orderBy($fieldName, $direction);
+        }
+
+        if ($pageSize !== null) {
+            $this->queryBuilder->setMaxResults($pageSize);
+        }
+
+        return new RowIterator($this->queryBuilder);
+    }
+
+    protected function createColumn(string $fieldName): ColumnInterface
+    {
+        $tableName = null;
+        if (strpos($fieldName, '.') !== false) {
+            [$tableName, $fieldName] = explode('.', $fieldName);
+        }
+
+        return new Column($fieldName, $tableName);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getIdentifierFieldNames(): array
+    {
+        return $this->identifierFields;
+    }
+
+    /**
+     * Parses the ordering expression for continuation token.
+     *
+     * @return array<string, string>
+     *
+     * @phpstan-return array<string, 'asc'|'desc'>
+     */
+    protected function parseOrderings(OrderExpression $ordering): array
+    {
+        $checksumColumn = $this->options['continuation_token']['checksum_field'] ?? $this->getIdentifierFieldNames()[0] ?? null;
+        $column = $this->columns[$ordering->getField()];
+
+        if ($checksumColumn === null) {
+            foreach ($this->columns as $column) {
+                if ($checksumColumn === $column) {
+                    continue;
+                }
+
+                $checksumColumn = $column;
+                break;
+            }
+        }
+
+        $checksumField = $checksumColumn instanceof ColumnInterface ? $checksumColumn->fieldName : $checksumColumn;
+        $fieldName = $column->fieldName;
+        $direction = $ordering->getDirection();
+
+        assert(is_string($checksumField));
+
+        return [
+            $fieldName => $direction,
+            $checksumField => 'asc',
+        ];
+    }
+
+    protected function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'identifiers' => [],
+        ]);
+
+        $resolver->setAllowedTypes('identifiers', 'array');
+    }
+
+    /**
+     * Add conditions to query builder.
+     *
+     * @param array<string, ExpressionInterface> $filters
+     */
+    private function attachToQueryBuilder(array $filters): void
+    {
+        $this->queryBuilder->andWhere('1 = 1');
+
+        foreach ($filters as $key => $expr) {
+            $column = $this->columns[$key];
+            $column->addCondition($this->queryBuilder, $expr);
+        }
+    }
+}

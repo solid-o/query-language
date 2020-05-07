@@ -1,0 +1,58 @@
+{
+    "name": "solido/query-language",
+    "description": "Query language designed for REST apis",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alessandro Chitolina",
+            "email": "alekitto@gmail.com"
+        }
+    ],
+    "scripts": {
+        "phpstan": "phpstan analyse src/ -c phpstan.neon --level=8 --no-progress -vvv --memory-limit=2048M",
+        "cscheck": "vendor/bin/phpcs --standard=Solido src/",
+        "csfix": "vendor/bin/phpcbf --standard=Solido src/"
+    },
+    "require": {
+        "php": "^7.4",
+        "symfony/form": "^4.4|^5.0",
+        "symfony/validator": "^4.4|^5.0",
+        "symfony/http-foundation": "^4.4|^5.0",
+        "symfony/polyfill-php80": "^1.10",
+        "solido/common": "dev-master",
+        "solido/pagination": "dev-master"
+    },
+    "require-dev": {
+        "doctrine/annotations": "^1.10",
+        "doctrine/dbal": "^2.10",
+        "doctrine/orm": "^2.7",
+        "doctrine/persistence": "^1.3",
+        "doctrine/phpcr-odm": "^1.5",
+        "jackalope/jackalope-doctrine-dbal": "^1.4",
+        "myclabs/php-enum": "^1.7",
+        "phpunit/phpunit": "^8.0|9.1",
+        "phpspec/prophecy-phpunit": "^2.0",
+        "refugis/doctrine-extra": "dev-master",
+        "roave/security-advisories": "dev-master",
+        "solido/php-coding-standards": "dev-master",
+        "symfony/cache": "^4.4|^5.0",
+        "symfony/var-dumper": "^4.4|^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Solido\\QueryLanguage\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Solido\\QueryLanguage\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "archive": {
+        "exclude": [ ".gitignore", ".travis.yml", "tests" ]
+    }
+}

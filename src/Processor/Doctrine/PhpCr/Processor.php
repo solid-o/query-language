@@ -1,0 +1,137 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Solido\QueryLanguage\Processor\Doctrine\PhpCr;
+
+use Doctrine\ODM\PHPCR\DocumentManagerInterface;
+use Doctrine\ODM\PHPCR\Mapping\ClassMetadata;
+use Doctrine\ODM\PHPCR\Query\Builder\AbstractNode;
+use Doctrine\ODM\PHPCR\Query\Builder\From;
+use Doctrine\ODM\PHPCR\Query\Builder\QueryBuilder;
+use Doctrine\ODM\PHPCR\Query\Builder\SourceDocument;
+use Refugis\DoctrineExtra\ObjectIteratorInterface;
+use Refugis\DoctrineExtra\ODM\PhpCr\DocumentIterator;
+use Solido\Pagination\Doctrine\PhpCr\PagerIterator;
+use Solido\QueryLanguage\Expression\ExpressionInterface;
+use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
+use Solido\QueryLanguage\Processor\Doctrine\ColumnInterface;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Request;
+use function assert;
+
+class Processor extends AbstractProcessor
+{
+    private QueryBuilder $queryBuilder;
+    private DocumentManagerInterface $documentManager;
+    private ClassMetadata $rootDocument;
+    private string $rootAlias;
+
+    /**
+     * @param mixed[] $options
+     */
+    public function __construct(
+        QueryBuilder $queryBuilder,
+        DocumentManagerInterface $documentManager,
+        FormFactoryInterface $formFactory,
+        array $options = []
+    ) {
+        parent::__construct($formFactory, $options);
+
+        $this->queryBuilder = $queryBuilder;
+        $this->documentManager = $documentManager;
+        $this->columns = [];
+
+        $fromNode = $this->queryBuilder->getChildOfType(AbstractNode::NT_FROM);
+        assert($fromNode instanceof From);
+        $sourceNode = $fromNode->getChildOfType(AbstractNode::NT_SOURCE);
+        assert($sourceNode instanceof SourceDocument);
+
+        $classMetadata = $this->documentManager->getClassMetadata($sourceNode->getDocumentFqn());
+        assert($classMetadata instanceof ClassMetadata);
+
+        $this->rootDocument = $classMetadata;
+        $this->rootAlias = $sourceNode->getAlias();
+    }
+
+    protected function createColumn(string $fieldName): ColumnInterface
+    {
+        return new Column($fieldName, $this->rootAlias, $this->rootDocument, $this->documentManager);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getIdentifierFieldNames(): array
+    {
+        return $this->rootDocument->getIdentifierFieldNames();
+    }
+
+    /**
+     * Processes and validates the request, adds the filters to the query builder and
+     * returns the iterator with the results.
+     *
+     * @return ObjectIteratorInterface|FormInterface
+     */
+    public function processRequest(Request $request)
+    {
+        $result = $this->handleRequest($request);
+        if ($result instanceof FormInterface) {
+            return $result;
+        }
+
+        $this->attachToQueryBuilder($result->filters);
+        $pageSize = $this->options['default_page_size'] ?? $result->limit;
+
+        if ($result->skip !== null) {
+            $this->queryBuilder->setFirstResult($result->skip);
+        }
+
+        if ($result->ordering !== null) {
+            if ($this->options['continuation_token']) {
+                $iterator = new PagerIterator($this->queryBuilder, $this->parseOrderings($result->ordering));
+                $iterator->setToken($result->pageToken);
+                if ($pageSize !== null) {
+                    $iterator->setPageSize($pageSize);
+                }
+
+                return $iterator;
+            }
+
+            $direction = $result->ordering->getDirection();
+            $fieldName = $this->columns[$result->ordering->getField()]->fieldName;
+
+            $fromNode = $this->queryBuilder->getChildOfType(AbstractNode::NT_FROM);
+            assert($fromNode instanceof From);
+            $source = $fromNode->getChildOfType(AbstractNode::NT_SOURCE);
+            assert($source instanceof SourceDocument);
+            $alias = $source->getAlias();
+
+            if ($this->rootDocument->getTypeOfField($fieldName) === 'nodename') {
+                $this->queryBuilder->orderBy()->{$direction}()->localName($alias);
+            } else {
+                $this->queryBuilder->orderBy()->{$direction}()->field($alias . '.' . $fieldName);
+            }
+        }
+
+        if ($pageSize !== null) {
+            $this->queryBuilder->setMaxResults($pageSize);
+        }
+
+        return new DocumentIterator($this->queryBuilder);
+    }
+
+    /**
+     * Add conditions to query builder.
+     *
+     * @param array<string, ExpressionInterface> $filters
+     */
+    private function attachToQueryBuilder(array $filters): void
+    {
+        foreach ($filters as $key => $expr) {
+            $column = $this->columns[$key];
+            $column->addCondition($this->queryBuilder, $expr);
+        }
+    }
+}

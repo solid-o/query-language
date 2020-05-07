@@ -1,0 +1,77 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Solido\QueryLanguage\Tests\Processor\Doctrine;
+
+use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophecy\ObjectProphecy;
+use Solido\QueryLanguage\Form\DTO\Query;
+use Solido\QueryLanguage\Form\QueryType;
+use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
+use Solido\QueryLanguage\Processor\Doctrine\ColumnInterface;
+use Solido\QueryLanguage\Tests\Processor\DummyColumn;
+use Solido\QueryLanguage\Walker\Validation\OrderWalker;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Request;
+
+class AbstractProcessorTest extends TestCase
+{
+    use ProphecyTrait;
+
+    /** @var ObjectProphecy|FormFactoryInterface */
+    private ObjectProphecy $formFactory;
+
+    protected function setUp(): void
+    {
+        $this->formFactory = $this->prophesize(FormFactoryInterface::class);
+    }
+
+    public function testCustomOrderValidationWalker(): void
+    {
+        $processor = new ConcreteProcessor($this->formFactory->reveal(), [
+            'order_field' => 'order',
+            'order_validation_walker' => $orderWalker = new OrderWalker(['test', 'foo']),
+        ]);
+
+        $this->formFactory->createNamed('', QueryType::class, Argument::type(Query::class), Argument::withEntry(
+            'order_validation_walker',
+            $orderWalker
+        ))
+            ->shouldBeCalled()
+            ->willReturn($form = $this->prophesize(FormInterface::class));
+
+        $form->handleRequest(Argument::any())->willReturn();
+        $form->isSubmitted()->willReturn(true);
+        $form->isValid()->willReturn(true);
+
+        $processor->handleRequest(new Request(['order' => '$order(test, asc)']));
+    }
+}
+
+class ConcreteProcessor extends AbstractProcessor
+{
+    protected function createColumn(string $fieldName): ColumnInterface
+    {
+        return new DummyColumn();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getIdentifierFieldNames(): array
+    {
+        return ['id'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function handleRequest(Request $request)
+    {
+        return parent::handleRequest($request);
+    }
+}
