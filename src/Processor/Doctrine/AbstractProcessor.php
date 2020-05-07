@@ -100,11 +100,17 @@ abstract class AbstractProcessor
      */
     protected function handleRequest(Request $request)
     {
+        $defaultOrder = $this->options['default_order'];
+        if ($request->headers->has('X-Order')) {
+            // @phpstan-ignore-next-line
+            $defaultOrder = OrderExpression::fromHeader($request->headers->get('X-Order'));
+        }
+
         $options = [
             'limit_field' => $this->options['limit_field'],
             'skip_field' => $this->options['skip_field'],
             'order_field' => $this->options['order_field'],
-            'default_order' => $this->options['default_order'],
+            'default_order' => $defaultOrder,
             'continuation_token_field' => $this->options['continuation_token']['field'] ?? null,
             'columns' => $this->fields,
             'orderable_columns' => array_keys(array_filter($this->fields, static function (FieldInterface $column): bool {
@@ -189,13 +195,15 @@ abstract class AbstractProcessor
     {
         $resolver = new OptionsResolver();
 
-        foreach (['order_field', 'skip_field', 'limit_field', 'default_order'] as $field) {
+        foreach (['skip_field', 'limit_field', 'default_order'] as $field) {
             $resolver
                 ->setDefault($field, null)
                 ->setAllowedTypes($field, ['null', 'string']);
         }
 
         $resolver
+            ->setDefault('order_field', '__x_order_header')
+            ->setAllowedTypes('order_field', 'string')
             ->setDefault('default_page_size', null)
             ->setAllowedTypes('default_page_size', ['null', 'int'])
             ->setDefault('order_validation_walker', null)
@@ -222,6 +230,10 @@ abstract class AbstractProcessor
             ->setNormalizer('default_order', static function (Options $options, $value): ?OrderExpression {
                 if (empty($value)) {
                     return null;
+                }
+
+                if ($value instanceof OrderExpression) {
+                    return $value;
                 }
 
                 if (strpos($value, '$') === false) {

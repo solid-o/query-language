@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Exception;
 
-class LogicException extends \LogicException
+class LogicException extends \LogicException implements ExceptionInterface
 {
 }

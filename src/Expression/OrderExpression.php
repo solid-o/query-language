@@ -4,7 +4,14 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Expression;
 
+use Solido\QueryLanguage\Exception\InvalidHeaderException;
 use Solido\QueryLanguage\Walker\TreeWalkerInterface;
+use function assert;
+use function count;
+use function explode;
+use function Safe\preg_match;
+use function Safe\preg_match_all;
+use function strtolower;
 
 final class OrderExpression implements ExpressionInterface
 {
@@ -19,6 +26,27 @@ final class OrderExpression implements ExpressionInterface
     {
         $this->field = $field;
         $this->direction = $direction;
+    }
+
+    /**
+     * Calculate a new order expresion from the given "X-Order" header.
+     */
+    public static function fromHeader(string $header): self
+    {
+        $res = preg_match_all('/(?:[^,"]++(?:"[^"]*+")?)+[^,"]*+/', $header, $matches);
+        if (! $res) {
+            throw new InvalidHeaderException('Invalid header passed, cannot be parsed');
+        }
+
+        $expl = explode(';', $matches[0][0]);
+        if (count($expl) === 1 || ! preg_match('/^(:?a|de)sc$/i', $expl[1])) {
+            return new self($expl[0], 'asc');
+        }
+
+        $direction = strtolower($expl[1]);
+        assert($direction === 'asc' || $direction === 'desc');
+
+        return new self($expl[0], $direction);
     }
 
     /**

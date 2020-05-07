@@ -358,4 +358,30 @@ class ProcessorTest extends TestCase
         self::assertInstanceOf(User::class, $result[0]);
         self::assertEquals('barbar', $result[0]->name);
     }
+
+    public function testXOrderInRequestShouldWork(): void
+    {
+        $formFactory = (new FormFactoryBuilder(true))
+            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
+            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
+            ->getFormFactory();
+
+        $this->processor = new Processor(
+            self::$documentManager->getRepository(User::class)->createQueryBuilder('u'),
+            self::$documentManager,
+            $formFactory,
+            [
+                'continuation_token' => true,
+            ],
+        );
+
+        $this->processor->addField('name');
+        $this->processor->setDefaultPageSize(3);
+
+        $request = new Request([]);
+        $request->headers->set('X-Order', 'name; desc');
+        $itr = $this->processor->processRequest($request);
+
+        self::assertInstanceOf(PagerIterator::class, $itr);
+    }
 }

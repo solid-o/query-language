@@ -14,6 +14,7 @@ use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Processor\FieldInterface;
 use Solido\QueryLanguage\Processor\Doctrine\DBAL\Processor;
 use Solido\QueryLanguage\Tests\Doctrine\ORM\FixturesTrait;
+use Solido\QueryLanguage\Tests\Fixtures\Document\User;
 use Solido\QueryLanguage\Tests\Fixtures\Entity\FooBar;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalker;
 use Symfony\Component\Form\Extension\HttpFoundation\Type\FormTypeHttpFoundationExtension;
@@ -224,5 +225,37 @@ class ProcessorTest extends TestCase
 
         self::assertCount(1, $result);
         self::assertEquals('barbar', $result[0]['name']);
+    }
+
+
+    public function testXOrderInRequestShouldWork(): void
+    {
+        $formFactory = (new FormFactoryBuilder(true))
+            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
+            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
+            ->getFormFactory();
+
+        $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
+        $queryBuilder
+            ->select('id', 'name', 'nameLength')
+            ->from('user', 'u');
+
+        $this->processor = new Processor(
+            $queryBuilder,
+            $formFactory,
+            [
+                'continuation_token' => true,
+                'identifiers' => ['id'],
+            ],
+        );
+
+        $this->processor->addField('name');
+        $this->processor->setDefaultPageSize(3);
+
+        $request = new Request([]);
+        $request->headers->set('X-Order', 'name; desc');
+        $itr = $this->processor->processRequest($request);
+
+        self::assertInstanceOf(PagerIterator::class, $itr);
     }
 }
