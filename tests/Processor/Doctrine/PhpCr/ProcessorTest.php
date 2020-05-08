@@ -38,7 +38,6 @@ class ProcessorTest extends TestCase
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $this->processor = new Processor(
@@ -104,7 +103,6 @@ class ProcessorTest extends TestCase
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $this->processor = new Processor(
@@ -127,7 +125,6 @@ class ProcessorTest extends TestCase
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $this->processor = new Processor(
@@ -207,7 +204,6 @@ class ProcessorTest extends TestCase
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $this->processor = new Processor(
@@ -235,7 +231,6 @@ class ProcessorTest extends TestCase
         $this->expectException(InvalidOptionsException::class);
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $this->processor = new Processor(
@@ -269,7 +264,6 @@ class ProcessorTest extends TestCase
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $this->processor = new Processor(
@@ -298,7 +292,6 @@ class ProcessorTest extends TestCase
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $this->processor = new Processor(
@@ -363,7 +356,6 @@ class ProcessorTest extends TestCase
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $this->processor = new Processor(

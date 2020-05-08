@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Grammar;
 
@@ -9,6 +11,7 @@ use Solido\QueryLanguage\Expression\EntryExpression;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\Logical;
 use Solido\QueryLanguage\Expression\OrderExpression;
+use function get_class;
 
 final class Grammar extends AbstractGrammar
 {
@@ -16,12 +19,10 @@ final class Grammar extends AbstractGrammar
 
     /**
      * Gets the Grammar class singleton.
-     *
-     * @return self
      */
     public static function getInstance(): self
     {
-        if (null === self::$instance) {
+        if (self::$instance === null) {
             self::$instance = new self();
         }
 
@@ -31,10 +32,7 @@ final class Grammar extends AbstractGrammar
     /**
      * Parses an expression into an AST.
      *
-     * @param string          $input
      * @param class-string<ExpressionInterface>|class-string<ExpressionInterface>[] $accept
-     *
-     * @return ExpressionInterface
      */
     public function parse(string $input, $accept = ExpressionInterface::class): ExpressionInterface
     {
@@ -46,7 +44,7 @@ final class Grammar extends AbstractGrammar
             }
         }
 
-        throw new InvalidArgumentException(\get_class($expr).' is not acceptable');
+        throw new InvalidArgumentException(get_class($expr) . ' is not acceptable');
     }
 
     /**
@@ -57,33 +55,24 @@ final class Grammar extends AbstractGrammar
         switch ($type) {
             case 'all':
                 return new AllExpression();
-
             case 'not':
                 return Logical\NotExpression::create($value);
-
             case 'eq':
                 return new Comparison\EqualExpression($value);
-
             case 'neq':
                 return Logical\NotExpression::create(new Comparison\EqualExpression($value));
-
             case 'lt':
                 return new Comparison\LessThanExpression($value);
-
             case 'lte':
                 return new Comparison\LessThanOrEqualExpression($value);
-
             case 'gt':
                 return new Comparison\GreaterThanExpression($value);
-
             case 'gte':
                 return new Comparison\GreaterThanOrEqualExpression($value);
-
             case 'like':
                 return new Comparison\LikeExpression($value);
-
             default:
-                throw new InvalidArgumentException('Unknown unary operator "'.$type.'"');
+                throw new InvalidArgumentException('Unknown unary operator "' . $type . '"');
         }
     }
 
@@ -95,20 +84,15 @@ final class Grammar extends AbstractGrammar
         switch ($type) {
             case 'range':
                 return Logical\AndExpression::create([new Comparison\GreaterThanOrEqualExpression($left), new Comparison\LessThanOrEqualExpression($right)]);
-
             case 'entry':
                 return EntryExpression::create($left, $right);
-
             default:
-                throw new InvalidArgumentException('Unknown binary operator "'.$type.'"');
+                throw new InvalidArgumentException('Unknown binary operator "' . $type . '"');
         }
     }
 
     /**
      * Evaluates an order expression.
-     *
-     * @param string $field
-     * @param string $direction
      *
      * @return OrderExpression
      *
@@ -127,13 +111,11 @@ final class Grammar extends AbstractGrammar
         switch ($type) {
             case 'and':
                 return Logical\AndExpression::create($arguments);
-
             case 'in':
             case 'or':
                 return Logical\OrExpression::create($arguments);
-
             default:
-                throw new InvalidArgumentException('Unknown operator "'.$type.'"');
+                throw new InvalidArgumentException('Unknown operator "' . $type . '"');
         }
     }
 }

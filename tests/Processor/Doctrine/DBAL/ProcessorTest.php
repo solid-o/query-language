@@ -36,7 +36,6 @@ class ProcessorTest extends TestCase
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
@@ -95,7 +94,6 @@ class ProcessorTest extends TestCase
 
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
@@ -134,7 +132,6 @@ class ProcessorTest extends TestCase
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
@@ -168,7 +165,6 @@ class ProcessorTest extends TestCase
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
@@ -232,7 +228,6 @@ class ProcessorTest extends TestCase
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->addTypeExtension(new FormTypeHttpFoundationExtension(new AutoSubmitRequestHandler()))
             ->getFormFactory();
 
         $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
