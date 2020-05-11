@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Solido\QueryLanguage\Processor\Doctrine;
 
 use InvalidArgumentException;
+use Solido\Pagination\PageToken;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Form\QueryType;
@@ -21,6 +22,8 @@ use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use function array_filter;
 use function array_keys;
+use function assert;
+use function Safe\preg_match;
 use function Safe\sprintf;
 use function strpos;
 
@@ -128,6 +131,22 @@ abstract class AbstractProcessor
             return $form;
         }
 
+        if ($this->options['range-header'] && $request->headers->has('Range')) {
+            $range = $request->headers->get('Range', '');
+            assert($range !== null);
+
+            if (preg_match('/^(units=(?P<start>\d+)-(?P<end>\d+)|after=(?P<token>[^\s,.]+))$/', $range, $matches)) {
+                if ($dto->skip === null && $dto->limit === null &&
+                    isset($matches['start'], $matches['end']) &&
+                    $matches['start'] !== '' && $matches['end'] !== '') {
+                    $dto->skip = (int) $matches['start'];
+                    $dto->limit = ((int) $matches['end']) - ((int) $matches['start']) + 1;
+                } elseif ($dto->pageToken === null && isset($matches['token']) && PageToken::isValid($matches['token'])) {
+                    $dto->pageToken = PageToken::parse($matches['token']);
+                }
+            }
+        }
+
         return $dto;
     }
 
@@ -202,8 +221,10 @@ abstract class AbstractProcessor
         }
 
         $resolver
+            ->setDefault('range-header', true)
+            ->setAllowedTypes('range-header', ['bool'])
             ->setDefault('order_field', '__x_order_header')
-            ->setAllowedTypes('order_field', 'string')
+            ->setAllowedTypes('order_field', ['null', 'string'])
             ->setDefault('default_page_size', null)
             ->setAllowedTypes('default_page_size', ['null', 'int'])
             ->setDefault('order_validation_walker', null)

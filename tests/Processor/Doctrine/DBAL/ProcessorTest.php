@@ -8,16 +8,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Refugis\DoctrineExtra\DBAL\RowIterator;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
-use Solido\Common\Form\AutoSubmitRequestHandler;
 use Solido\Pagination\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Processor\FieldInterface;
 use Solido\QueryLanguage\Processor\Doctrine\DBAL\Processor;
 use Solido\QueryLanguage\Tests\Doctrine\ORM\FixturesTrait;
-use Solido\QueryLanguage\Tests\Fixtures\Document\User;
 use Solido\QueryLanguage\Tests\Fixtures\Entity\FooBar;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalker;
-use Symfony\Component\Form\Extension\HttpFoundation\Type\FormTypeHttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryBuilder;
 use Symfony\Component\Form\FormInterface;
@@ -86,6 +83,23 @@ class ProcessorTest extends TestCase
         $result = iterator_to_array($itr);
 
         self::assertCount(3, $result);
+    }
+
+    public function testPageTokenInRangeHeader(): void
+    {
+        $this->processor->addField('name');
+        $this->processor->setDefaultPageSize(3);
+
+        $request = new Request();
+        $request->headers->set('X-Order', 'name; asc');
+        $request->headers->set('Range', 'after==YmF6_1_10tf9ny');
+        $itr = $this->processor->processRequest($request);
+
+        self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
+        $result = iterator_to_array($itr);
+
+        self::assertCount(3, $result);
+        self::assertEquals('=Zm9vYmFy_1_ugzi57', (string) $itr->getNextPageToken());
     }
 
     public function testOrderByDefaultFieldShouldThrowOnInvalidOptions(): void

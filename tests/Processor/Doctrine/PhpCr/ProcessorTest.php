@@ -226,6 +226,43 @@ class ProcessorTest extends TestCase
         self::assertCount(3, $result);
     }
 
+    public function provideRangeHeaders(): iterable
+    {
+        yield [ 'bytes=0-', 7 ]; // Not supported
+
+        yield [ 'units=0-0', 1 ];
+        yield [ 'units=0-2', 3 ];
+        yield [ 'after==YmF6_1_q7c73y', 4 ];
+    }
+
+    /**
+     * @dataProvider provideRangeHeaders
+     */
+    public function testRangeHeader(string $rangeHeader, int $count): void
+    {
+        $formFactory = (new FormFactoryBuilder(true))
+            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
+            ->getFormFactory();
+
+        $this->processor = new Processor(
+            self::$documentManager->getRepository(User::class)->createQueryBuilder('u'),
+            self::$documentManager,
+            $formFactory,
+            [ 'continuation_token' => true ],
+        );
+
+        $this->processor->addField('name');
+
+        $request = new Request([]);
+        $request->headers->set('X-Order', 'name; asc');
+        $request->headers->set('Range', $rangeHeader);
+
+        $itr = $this->processor->processRequest($request);
+
+        self::assertInstanceOf(PagerIterator::class, $itr);
+        self::assertCount($count, iterator_to_array($itr));
+    }
+
     public function testOrderByDefaultFieldShouldThrowOnInvalidOptions(): void
     {
         $this->expectException(InvalidOptionsException::class);
