@@ -65,7 +65,6 @@ class Field implements FieldInterface
         $this->mapping = $rootField;
 
         $this->fieldType = 'string';
-        // @phpstan-ignore-next-line
         if (isset($this->mapping['type']) && ! isset($this->mapping['targetDocument'])) {
             $this->fieldType = $this->mapping['type'];
         }
@@ -142,7 +141,7 @@ class Field implements FieldInterface
         $currentFieldName = $alias;
         $currentAlias = $alias;
         foreach ($this->associations as $association) {
-            if (isset($association['targetDocument'])) {
+            if (isset($association['targetDocument'], $association['sourceDocument'])) {
                 $from = $queryBuilder->getChildOfType(AbstractNode::NT_FROM);
                 assert($from instanceof From);
 
