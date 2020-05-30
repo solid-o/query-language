@@ -97,10 +97,10 @@ abstract class AbstractGrammar
     private $yyaction = [
            45,   13,   35,   36,   37,   38,   39,   40,   41,   33,
            15,   42,   43,   44,   46,   16,   45,    0,   33,   14,
-           56,   28,   65,    3,    1,   29,   34,    6,   14,    4,
-           46,    5,    7,    0,    8,   34,   51,    0,    9,   22,
-            6,    0,   48,   49,   52,   53,   57,   55,   54,    0,
-            2,   10,
+           65,    3,   56,   28,    4,   29,   34,    6,   14,    1,
+           46,    5,    7,    0,    8,   34,   49,    0,    9,   22,
+            6,    0,   48,   51,   57,   55,   54,   53,   52,    0,
+           10,    2,
     ];
 
     private $yycheck = [
@@ -114,9 +114,9 @@ abstract class AbstractGrammar
 
     private $yybase = [
             7,    7,    7,    7,   16,   20,   13,   13,   13,   13,
-           13,   -1,    1,    4,   12,   14,   18,   17,   19,    9,
-           11,   15,   21,   22,   29,   28,   23,   24,    8,   25,
-           26,   27,   -3,   -3,   -3,   -3,   -3,   -3,
+           13,    1,   -1,    9,   12,   14,   18,   17,   19,    4,
+           11,   22,   21,   15,   28,   29,   27,   26,    8,   23,
+           24,   25,   -3,   -3,   -3,   -3,   -3,   -3,
     ];
 
     private $yydefault = [
@@ -128,17 +128,17 @@ abstract class AbstractGrammar
 
     private $yygoto = [
            26,   27,   21,   11,   24,   25,   30,   23,   31,   64,
-           60,    0,   59,   61,   62,   63,
+           63,    0,   60,   59,   61,   62,
     ];
 
     private $yygcheck = [
             5,   10,    5,    5,    5,    5,    5,    1,    1,    1,
-            7,   -1,    8,    9,   11,   14,
+           14,   -1,    7,    8,    9,   11,
     ];
 
     private $yygbase = [
-            0,    6,    0,    0,    0,   -4,    0,    5,    7,    8,
-           -3,    9,    0,    0,   10,
+            0,    6,    0,    0,    0,   -4,    0,    7,    8,    9,
+           -3,   10,    0,    0,    5,
     ];
 
     private $yygdefault = [
@@ -466,8 +466,7 @@ abstract class AbstractGrammar
     /**
      * Evaluates an unary expression.
      *
-     * @param string $type
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @return mixed
      */
@@ -476,9 +475,8 @@ abstract class AbstractGrammar
     /**
      * Evaluates a binary expression.
      *
-     * @param string $type
-     * @param mixed  $left
-     * @param mixed  $right
+     * @param mixed $left
+     * @param mixed $right
      *
      * @return mixed
      */
@@ -487,9 +485,6 @@ abstract class AbstractGrammar
     /**
      * Evaluates an order expression.
      *
-     * @param string $field
-     * @param string $direction
-     *
      * @return mixed
      */
     abstract protected function orderExpression(string $field, string $direction);
@@ -497,7 +492,6 @@ abstract class AbstractGrammar
     /**
      * Evaluates an expression with variadic arguments.
      *
-     * @param string  $type
      * @param mixed[] $arguments
      *
      * @return mixed

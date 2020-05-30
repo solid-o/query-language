@@ -119,7 +119,6 @@ private function yylex(): int
 /**
  * Evaluates an unary expression.
  *
- * @param string $type
  * @param mixed $value
  *
  * @return mixed
@@ -129,7 +128,6 @@ abstract protected function unaryExpression(string $type, $value);
 /**
  * Evaluates a binary expression.
  *
- * @param string $type
  * @param mixed $left
  * @param mixed $right
  *
@@ -140,9 +138,6 @@ abstract protected function binaryExpression(string $type, $left, $right);
 /**
  * Evaluates an order expression.
  *
- * @param string $field
- * @param string $direction
- *
  * @return mixed
  */
 abstract protected function orderExpression(string $field, string $direction);
@@ -150,7 +145,6 @@ abstract protected function orderExpression(string $field, string $direction);
 /**
  * Evaluates an expression with variadic arguments.
  *
- * @param string $type
  * @param mixed[] $arguments
  *
  * @return mixed
