@@ -28,7 +28,7 @@ abstract class LiteralExpression extends ValueExpression
     /**
      * {@inheritdoc}
      */
-    public static function create($value): ValueExpression
+    public static function create($value): LiteralExpression
     {
         if (! is_string($value)) {
             throw new TypeError(sprintf('Argument 1 passed to ' . __METHOD__ . ' must be a string. %s passed', is_object($value) ? get_class($value) : gettype($value)));

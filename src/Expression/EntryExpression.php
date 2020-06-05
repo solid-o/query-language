@@ -40,7 +40,7 @@ final class EntryExpression implements ExpressionInterface
 
     public function __toString(): string
     {
-        return '$entry(' . (string) $this->key . ', ' . (string) $this->value . ')';
+        return '$entry(' . $this->key . ', ' . $this->value . ')';
     }
 
     /**
