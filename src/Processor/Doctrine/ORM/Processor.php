@@ -74,7 +74,7 @@ class Processor extends AbstractProcessor
 
         if ($result->ordering !== null) {
             $ordering = $this->parseOrderings($this->queryBuilder, $result->ordering);
-            if ($this->options['continuation_token']) {
+            if ($ordering && $this->options['continuation_token']) {
                 $iterator = new PagerIterator($this->queryBuilder, $ordering);
                 $iterator->setToken($result->pageToken);
                 if ($pageSize !== null) {

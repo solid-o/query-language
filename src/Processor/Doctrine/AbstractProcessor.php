@@ -176,6 +176,9 @@ abstract class AbstractProcessor
         }
 
         $order = $field->getOrder($queryBuilder, $ordering);
+        if (empty($order)) {
+            return [];
+        }
 
         $checksumField = $this->getIdentifierFieldNames()[0];
         if (isset($this->options['continuation_token']['checksum_field'])) {

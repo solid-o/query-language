@@ -17,6 +17,7 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use function array_key_first;
 use function array_values;
 use function assert;
 use function explode;
@@ -59,8 +60,9 @@ class Processor extends AbstractProcessor
         }
 
         if ($result->ordering !== null) {
-            if ($this->options['continuation_token']) {
-                $iterator = new PagerIterator($this->queryBuilder, $this->parseOrderings($this->queryBuilder, $result->ordering));
+            $ordering = $this->parseOrderings($this->queryBuilder, $result->ordering);
+            if ($ordering && $this->options['continuation_token']) {
+                $iterator = new PagerIterator($this->queryBuilder, $ordering);
                 $iterator->setToken($result->pageToken);
                 if ($pageSize !== null) {
                     $iterator->setPageSize($pageSize);
@@ -69,16 +71,15 @@ class Processor extends AbstractProcessor
                 return $iterator;
             }
 
-            $sql = $this->queryBuilder->getSQL();
-            $direction = $result->ordering->getDirection();
-            $fieldName = $this->fields[$result->ordering->getField()]->fieldName;
-
-            $this->queryBuilder = $this->queryBuilder->getConnection()
-                ->createQueryBuilder()
-                ->select('*')
-                ->from('(' . $sql . ')', 'x')
-                ->setFirstResult($result->skip ?? 0)
-                ->orderBy($fieldName, $direction);
+            $key = array_key_first($ordering);
+            if ($key !== null) {
+                $this->queryBuilder = $this->queryBuilder->getConnection()
+                    ->createQueryBuilder()
+                    ->select('*')
+                    ->from('(' . $this->queryBuilder->getSQL() . ')', 'x')
+                    ->setFirstResult($result->skip ?? 0)
+                    ->orderBy($key, $ordering[$key]);
+            }
         }
 
         if ($pageSize !== null) {

@@ -91,7 +91,7 @@ class Processor extends AbstractProcessor
 
         if ($result->ordering !== null) {
             $ordering = $this->parseOrderings($this->queryBuilder, $result->ordering);
-            if ($this->options['continuation_token']) {
+            if ($ordering && $this->options['continuation_token']) {
                 $iterator = new PagerIterator($this->queryBuilder, $ordering);
                 $iterator->setToken($result->pageToken);
                 if ($pageSize !== null) {
@@ -103,13 +103,13 @@ class Processor extends AbstractProcessor
 
             $key = array_key_first($ordering);
 
-            $fromNode = $this->queryBuilder->getChildOfType(AbstractNode::NT_FROM);
-            assert($fromNode instanceof From);
-            $source = $fromNode->getChildOfType(AbstractNode::NT_SOURCE);
-            assert($source instanceof SourceDocument);
-            $alias = $source->getAlias();
-
             if ($key !== null) {
+                $fromNode = $this->queryBuilder->getChildOfType(AbstractNode::NT_FROM);
+                assert($fromNode instanceof From);
+                $source = $fromNode->getChildOfType(AbstractNode::NT_SOURCE);
+                assert($source instanceof SourceDocument);
+                $alias = $source->getAlias();
+
                 if ($this->rootDocument->getTypeOfField($key) === 'nodename') {
                     $this->queryBuilder->orderBy()->{$ordering[$key]}()->localName($alias);
                 } else {

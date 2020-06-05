@@ -11,8 +11,10 @@ use Refugis\DoctrineExtra\ORM\EntityIterator;
 use Solido\Common\Form\AutoSubmitRequestHandler;
 use Solido\Pagination\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
+use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Processor\FieldInterface;
 use Solido\QueryLanguage\Processor\Doctrine\ORM\Processor;
+use Solido\QueryLanguage\Processor\OrderableFieldInterface;
 use Solido\QueryLanguage\Tests\Doctrine\ORM\FixturesTrait;
 use Solido\QueryLanguage\Tests\Fixtures\Entity\FooBar;
 use Solido\QueryLanguage\Tests\Fixtures\Entity\User;
@@ -255,6 +257,48 @@ class ProcessorTest extends TestCase
             }
         });
         $itr = $this->processor->processRequest(new Request(['foobar' => 'foobar_barbar']));
+
+        self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
+        $result = iterator_to_array($itr);
+
+        self::assertCount(1, $result);
+        self::assertInstanceOf(User::class, $result[0]);
+        self::assertEquals('barbar', $result[0]->name);
+    }
+
+    public function testGetOrderCanReturnEmptyArray(): void
+    {
+        $this->processor->addField('foobar', new class(self::$entityManager) implements OrderableFieldInterface {
+            /** @var EntityManagerInterface */
+            private $entityManager;
+
+            public function __construct(EntityManagerInterface $entityManager)
+            {
+                $this->entityManager = $entityManager;
+            }
+
+            public function addCondition($queryBuilder, ExpressionInterface $expression): void
+            {
+                $foobar = $this->entityManager->getRepository(FooBar::class)
+                    ->findOneBy(['foobar' => $expression->getValue()]);
+
+                $queryBuilder->andWhere('u.foobar = :foobar')
+                    ->setParameter('foobar', $foobar);
+            }
+
+            public function getOrder(object $queryBuilder, OrderExpression $orderExpression): array
+            {
+                return [];
+            }
+
+            public function getValidationWalker()
+            {
+                return new ValidationWalker();
+            }
+        });
+        $request = new Request(['foobar' => 'foobar_barbar']);
+        $request->headers->set('X-Order', 'foobar, asc');
+        $itr = $this->processor->processRequest($request);
 
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
         $result = iterator_to_array($itr);
