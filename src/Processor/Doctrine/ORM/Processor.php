@@ -17,6 +17,7 @@ use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use function array_key_first;
 
 class Processor extends AbstractProcessor
 {
@@ -72,8 +73,9 @@ class Processor extends AbstractProcessor
         }
 
         if ($result->ordering !== null) {
+            $ordering = $this->parseOrderings($this->queryBuilder, $result->ordering);
             if ($this->options['continuation_token']) {
-                $iterator = new PagerIterator($this->queryBuilder, $this->parseOrderings($this->queryBuilder, $result->ordering));
+                $iterator = new PagerIterator($this->queryBuilder, $ordering);
                 $iterator->setToken($result->pageToken);
                 if ($pageSize !== null) {
                     $iterator->setPageSize($pageSize);
@@ -82,8 +84,10 @@ class Processor extends AbstractProcessor
                 return $iterator;
             }
 
-            $fieldName = $this->fields[$result->ordering->getField()]->fieldName;
-            $this->queryBuilder->orderBy($this->rootAlias . '.' . $fieldName, $result->ordering->getDirection());
+            $key = array_key_first($ordering);
+            if ($key !== null) {
+                $this->queryBuilder->orderBy($key, $ordering[$key]);
+            }
         }
 
         if ($pageSize !== null) {

@@ -19,6 +19,7 @@ use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use function array_key_first;
 use function assert;
 
 class Processor extends AbstractProcessor
@@ -89,8 +90,9 @@ class Processor extends AbstractProcessor
         }
 
         if ($result->ordering !== null) {
+            $ordering = $this->parseOrderings($this->queryBuilder, $result->ordering);
             if ($this->options['continuation_token']) {
-                $iterator = new PagerIterator($this->queryBuilder, $this->parseOrderings($this->queryBuilder, $result->ordering));
+                $iterator = new PagerIterator($this->queryBuilder, $ordering);
                 $iterator->setToken($result->pageToken);
                 if ($pageSize !== null) {
                     $iterator->setPageSize($pageSize);
@@ -99,8 +101,7 @@ class Processor extends AbstractProcessor
                 return $iterator;
             }
 
-            $direction = $result->ordering->getDirection();
-            $fieldName = $this->fields[$result->ordering->getField()]->fieldName;
+            $key = array_key_first($ordering);
 
             $fromNode = $this->queryBuilder->getChildOfType(AbstractNode::NT_FROM);
             assert($fromNode instanceof From);
@@ -108,10 +109,12 @@ class Processor extends AbstractProcessor
             assert($source instanceof SourceDocument);
             $alias = $source->getAlias();
 
-            if ($this->rootDocument->getTypeOfField($fieldName) === 'nodename') {
-                $this->queryBuilder->orderBy()->{$direction}()->localName($alias);
-            } else {
-                $this->queryBuilder->orderBy()->{$direction}()->field($alias . '.' . $fieldName);
+            if ($key !== null) {
+                if ($this->rootDocument->getTypeOfField($key) === 'nodename') {
+                    $this->queryBuilder->orderBy()->{$ordering[$key]}()->localName($alias);
+                } else {
+                    $this->queryBuilder->orderBy()->{$ordering[$key]}()->field($alias . '.' . $key);
+                }
             }
         }
 
