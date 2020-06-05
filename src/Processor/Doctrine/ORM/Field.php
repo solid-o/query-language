@@ -25,7 +25,7 @@ use function is_string;
 class Field implements FieldInterface
 {
     private string $rootAlias;
-    private string $columnType;
+    private string $fieldType;
     private EntityManagerInterface $entityManager;
     public string $fieldName;
 
@@ -66,7 +66,7 @@ class Field implements FieldInterface
         }
 
         $this->mapping = $rootField;
-        $this->columnType = isset($this->mapping['targetEntity']) ? 'string' : ($this->mapping['type'] ?? 'string');
+        $this->fieldType = isset($this->mapping['targetEntity']) ? 'string' : ($this->mapping['type'] ?? 'string');
         $this->associations = [];
 
         if ($rest === null) {
@@ -100,16 +100,16 @@ class Field implements FieldInterface
 
         $fieldName = $this->discriminator ? $this->rootAlias : $this->rootAlias . '.' . $alias;
         if ($walker !== null) {
-            $walker = is_string($walker) ? new $walker($queryBuilder, $fieldName) : $walker($queryBuilder, $fieldName, $this->columnType);
+            $walker = is_string($walker) ? new $walker($queryBuilder, $fieldName) : $walker($queryBuilder, $fieldName, $this->fieldType);
         } else {
-            $walker = new DqlWalker($queryBuilder, $fieldName, $this->columnType);
+            $walker = new DqlWalker($queryBuilder, $fieldName, $this->fieldType);
         }
 
         $queryBuilder->andWhere($expression->dispatch($walker));
     }
 
     /**
-     * Processes an association column and attaches the conditions to the query builder.
+     * Processes an association field and attaches the conditions to the query builder.
      */
     private function addAssociationCondition(QueryBuilder $queryBuilder, ExpressionInterface $expression): void
     {
@@ -134,9 +134,9 @@ class Field implements FieldInterface
         }
 
         if ($walker !== null) {
-            $walker = is_string($walker) ? new $walker($subQb, $currentFieldName) : $walker($subQb, $currentFieldName, $this->columnType);
+            $walker = is_string($walker) ? new $walker($subQb, $currentFieldName) : $walker($subQb, $currentFieldName, $this->fieldType);
         } else {
-            $walker = new DqlWalker($subQb, $currentFieldName, $this->columnType);
+            $walker = new DqlWalker($subQb, $currentFieldName, $this->fieldType);
         }
 
         $subQb->where($expression->dispatch($walker));
@@ -175,7 +175,7 @@ class Field implements FieldInterface
     }
 
     /**
-     * Whether this column navigates into associations.
+     * Whether this field navigates into associations.
      */
     public function isAssociation(): bool
     {
@@ -199,7 +199,7 @@ class Field implements FieldInterface
     }
 
     /**
-     * Whether this column represents the owning side of the association.
+     * Whether this field represents the owning side of the association.
      */
     public function isOwningSide(): bool
     {
@@ -207,7 +207,7 @@ class Field implements FieldInterface
     }
 
     /**
-     * Checks if the field name is a discriminator column name.
+     * Checks if the field name is a discriminator field name.
      */
     private function searchForDiscriminator(ClassMetadata $rootEntity, string $fieldName): void
     {

@@ -23,7 +23,7 @@ class QueryTypeTest extends TypeTestCase
     public function testShouldNotAllowNegativeSkip(): void
     {
         $form = $this->factory->createNamed('', QueryType::class, $query = new Query(), [
-            'columns' => [],
+            'fields' => [],
             'skip_field' => 'skip',
         ]);
         $form->submit(['skip' => -10]);
@@ -34,7 +34,7 @@ class QueryTypeTest extends TypeTestCase
     public function testShouldNotAllowNegativeLimit(): void
     {
         $form = $this->factory->createNamed('', QueryType::class, $query = new Query(), [
-            'columns' => [],
+            'fields' => [],
             'limit_field' => 'limit',
         ]);
         $form->submit(['limit' => -10]);
@@ -45,7 +45,7 @@ class QueryTypeTest extends TypeTestCase
     public function testShouldAcceptSkipAndLimit(): void
     {
         $form = $this->factory->createNamed('', QueryType::class, $query = new Query(), [
-            'columns' => [],
+            'fields' => [],
             'skip_field' => 'skip',
             'limit_field' => 'limit',
         ]);

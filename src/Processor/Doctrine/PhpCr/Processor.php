@@ -130,8 +130,8 @@ class Processor extends AbstractProcessor
     private function attachToQueryBuilder(array $filters): void
     {
         foreach ($filters as $key => $expr) {
-            $column = $this->fields[$key];
-            $column->addCondition($this->queryBuilder, $expr);
+            $field = $this->fields[$key];
+            $field->addCondition($this->queryBuilder, $expr);
         }
     }
 }

@@ -165,8 +165,8 @@ class Processor extends AbstractProcessor
         $this->queryBuilder->andWhere('1 = 1');
 
         foreach ($filters as $key => $expr) {
-            $column = $this->fields[$key];
-            $column->addCondition($this->queryBuilder, $expr);
+            $field = $this->fields[$key];
+            $field->addCondition($this->queryBuilder, $expr);
         }
     }
 }

@@ -51,7 +51,7 @@ class ProcessorTest extends TestCase
         );
     }
 
-    public function testBuiltinColumnWorks(): void
+    public function testBuiltinFieldWorks(): void
     {
         $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['name' => 'goofy']));
@@ -204,7 +204,7 @@ class ProcessorTest extends TestCase
         self::assertInstanceOf(RowIterator::class, $itr);
     }
 
-    public function testCustomColumnWorks(): void
+    public function testCustomFieldWorks(): void
     {
         $this->processor->addField('foobar', new class(self::$entityManager) implements FieldInterface {
             private EntityManagerInterface $entityManager;

@@ -17,7 +17,7 @@ use function is_string;
  */
 class Field implements FieldInterface
 {
-    private string $columnType;
+    private string $fieldType;
     public string $fieldName;
     public ?string $tableName;
 
@@ -31,7 +31,7 @@ class Field implements FieldInterface
     {
         $this->fieldName = $fieldName;
         $this->tableName = $tableName;
-        $this->columnType = $type;
+        $this->fieldType = $type;
 
         $this->validationWalker = null;
         $this->customWalker = null;
@@ -56,9 +56,9 @@ class Field implements FieldInterface
         $fieldName = ($this->tableName ? $this->tableName . '.' : '') . $this->fieldName;
 
         if ($walker !== null) {
-            $walker = is_string($walker) ? new $walker($queryBuilder, $fieldName) : $walker($queryBuilder, $fieldName, $this->columnType);
+            $walker = is_string($walker) ? new $walker($queryBuilder, $fieldName) : $walker($queryBuilder, $fieldName, $this->fieldType);
         } else {
-            $walker = new SqlWalker($queryBuilder, $fieldName, $this->columnType);
+            $walker = new SqlWalker($queryBuilder, $fieldName, $this->fieldType);
         }
 
         $queryBuilder->andWhere($expression->dispatch($walker));

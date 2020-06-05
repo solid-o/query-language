@@ -17,7 +17,7 @@ interface FieldInterface
     public function addCondition(object $queryBuilder, ExpressionInterface $expression): void;
 
     /**
-     * Gets the validation walker factory for the current column.
+     * Gets the validation walker factory for the current field.
      *
      * @return string|callable|null
      */

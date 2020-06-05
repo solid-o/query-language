@@ -110,7 +110,7 @@ class Field implements FieldInterface
     }
 
     /**
-     * Whether this column navigates into associations.
+     * Whether this field navigates into associations.
      */
     public function isAssociation(): bool
     {
@@ -118,7 +118,7 @@ class Field implements FieldInterface
     }
 
     /**
-     * Processes an association column and attaches the conditions to the query builder.
+     * Processes an association field and attaches the conditions to the query builder.
      */
     private function addAssociationCondition(QueryBuilder $queryBuilder, ExpressionInterface $expression): void
     {

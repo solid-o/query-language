@@ -48,7 +48,7 @@ class ProcessorTest extends TestCase
         );
     }
 
-    public function testBuiltinColumnWorks(): void
+    public function testBuiltinFieldWorks(): void
     {
         $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['name' => 'goofy']));
@@ -61,7 +61,7 @@ class ProcessorTest extends TestCase
         self::assertEquals('goofy', $result[0]->name);
     }
 
-    public function testRelationColumnWorks(): void
+    public function testRelationFieldWorks(): void
     {
         $this->processor->addField('foobar');
         $itr = $this->processor->processRequest(new Request(['foobar' => '$entry(foobar, foobar_donald duck)']));
@@ -74,7 +74,7 @@ class ProcessorTest extends TestCase
         self::assertEquals('donald duck', $result[0]->name);
     }
 
-    public function testColumnWithFieldInRelatedEntityWorks(): void
+    public function testFieldWithFieldInRelatedEntityWorks(): void
     {
         $this->processor->addField('foobar', ['field_name' => 'foobar.foobar']);
         $itr = $this->processor->processRequest(new Request(['foobar' => 'foobar_donald duck']));
@@ -229,7 +229,7 @@ class ProcessorTest extends TestCase
         self::assertInstanceOf(EntityIterator::class, $itr);
     }
 
-    public function testCustomColumnWorks(): void
+    public function testCustomFieldWorks(): void
     {
         $this->processor->addField('foobar', new class(self::$entityManager) implements FieldInterface {
             /** @var EntityManagerInterface */

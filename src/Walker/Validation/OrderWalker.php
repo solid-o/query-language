@@ -13,14 +13,14 @@ use function in_array;
 class OrderWalker extends ValidationWalker
 {
     /** @var string[] */
-    private array $orderableColumns;
+    private array $orderableFields;
 
     /**
-     * @param string[] $orderableColumns
+     * @param string[] $orderableFields
      */
-    public function __construct(array $orderableColumns)
+    public function __construct(array $orderableFields)
     {
-        $this->orderableColumns = $orderableColumns;
+        $this->orderableFields = $orderableFields;
     }
 
     /**
@@ -52,13 +52,13 @@ class OrderWalker extends ValidationWalker
      */
     public function walkOrder(string $field, string $direction)
     {
-        if (in_array($field, $this->orderableColumns, true)) {
+        if (in_array($field, $this->orderableFields, true)) {
             return;
         }
 
         $this->addViolation('Value "{{ value }}" is not allowed. Must be one of "{{ allowed_values }}".', [
             '{{ value }}' => $field,
-            '{{ allowed_values }}' => implode('", "', $this->orderableColumns),
+            '{{ allowed_values }}' => implode('", "', $this->orderableFields),
         ]);
     }
 

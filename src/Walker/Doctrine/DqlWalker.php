@@ -32,14 +32,14 @@ class DqlWalker extends AbstractWalker
     ];
 
     protected QueryBuilder $queryBuilder;
-    private ?string $columnType;
+    private ?string $fieldType;
 
-    public function __construct(QueryBuilder $queryBuilder, string $field, ?string $columnType = null)
+    public function __construct(QueryBuilder $queryBuilder, string $field, ?string $fieldType = null)
     {
         parent::__construct($field);
 
         $this->queryBuilder = $queryBuilder;
-        $this->columnType = $columnType;
+        $this->fieldType = $fieldType;
     }
 
     /**
@@ -52,7 +52,7 @@ class DqlWalker extends AbstractWalker
             return $value;
         }
 
-        switch ($this->columnType) {
+        switch ($this->fieldType) {
             case Types::DATETIME_MUTABLE:
             case Types::DATETIMETZ_MUTABLE:
                 return new DateTime($value);
@@ -80,7 +80,7 @@ class DqlWalker extends AbstractWalker
         }
 
         $parameterName = $this->generateParameterName();
-        $this->queryBuilder->setParameter($parameterName, $expression->dispatch($this), $this->columnType);
+        $this->queryBuilder->setParameter($parameterName, $expression->dispatch($this), $this->fieldType);
 
         return new Expr\Comparison($field, self::COMPARISON_MAP[$operator], ':' . $parameterName);
     }

@@ -78,11 +78,11 @@ class QueryType extends AbstractType
             ]);
         }
 
-        foreach ($options['columns'] as $key => $column) {
-            assert($column instanceof FieldInterface);
+        foreach ($options['fields'] as $key => $field) {
+            assert($field instanceof FieldInterface);
             $builder->add($key, FieldType::class, [
                 'constraints' => [
-                    new Expression($column->getValidationWalker()),
+                    new Expression($field->getValidationWalker()),
                 ],
                 'property_path' => 'filters[' . $key . ']',
             ]);
@@ -101,8 +101,8 @@ class QueryType extends AbstractType
                 'default_order' => null,
                 'allow_extra_fields' => true,
                 'method' => Request::METHOD_GET,
-                'orderable_columns' => static fn (Options $options) => array_keys($options['columns']),
-                'order_validation_walker' => static fn (Options $options) => new OrderWalker($options['orderable_columns']),
+                'orderable_fields' => static fn (Options $options) => array_keys($options['fields']),
+                'order_validation_walker' => static fn (Options $options) => new OrderWalker($options['orderable_fields']),
             ])
             ->setAllowedTypes('skip_field', ['null', 'string'])
             ->setAllowedTypes('limit_field', ['null', 'string'])
@@ -110,7 +110,7 @@ class QueryType extends AbstractType
             ->setAllowedTypes('order_field', ['null', 'string'])
             ->setAllowedTypes('default_order', ['null', OrderExpression::class])
             ->setAllowedTypes('order_validation_walker', ['null', ValidationWalkerInterface::class])
-            ->setRequired('columns');
+            ->setRequired('fields');
     }
 
     private static function getHandler(): RequestHandlerInterface

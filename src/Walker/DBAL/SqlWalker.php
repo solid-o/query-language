@@ -25,17 +25,17 @@ class SqlWalker extends AbstractWalker
 {
     private AbstractPlatform $platform;
     protected QueryBuilder $queryBuilder;
-    private ?string $columnType;
+    private ?string $fieldType;
     private string $fieldName;
 
-    public function __construct(QueryBuilder $queryBuilder, string $field, ?string $columnType = null)
+    public function __construct(QueryBuilder $queryBuilder, string $field, ?string $fieldType = null)
     {
         $this->platform = $queryBuilder->getConnection()->getDatabasePlatform();
         parent::__construct($this->platform->quoteIdentifier($field));
 
         $this->fieldName = $field;
         $this->queryBuilder = $queryBuilder;
-        $this->columnType = $columnType;
+        $this->fieldType = $fieldType;
     }
 
     /**
@@ -48,7 +48,7 @@ class SqlWalker extends AbstractWalker
             return $value;
         }
 
-        switch ($this->columnType) {
+        switch ($this->fieldType) {
             case Types::DATETIME_MUTABLE:
             case Types::DATETIMETZ_MUTABLE:
                 return new DateTime($value);
@@ -76,7 +76,7 @@ class SqlWalker extends AbstractWalker
         }
 
         $parameterName = $this->generateParameterName();
-        $this->queryBuilder->setParameter($parameterName, $expression->dispatch($this), $this->columnType);
+        $this->queryBuilder->setParameter($parameterName, $expression->dispatch($this), $this->fieldType);
 
         return $field . ' ' . $operator . ' :' . $parameterName;
     }

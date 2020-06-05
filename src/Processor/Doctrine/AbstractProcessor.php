@@ -55,7 +55,7 @@ abstract class AbstractProcessor
     }
 
     /**
-     * Adds a column to this list processor.
+     * Adds a field to this list processor.
      *
      * @param array<null|string|callable>|FieldInterface $options
      *
@@ -81,17 +81,17 @@ abstract class AbstractProcessor
             ->setAllowedTypes('validation_walker', ['null', 'string', 'callable'])
             ->resolve($options);
 
-        $column = $this->createField($options['field_name']);
+        $field = $this->createField($options['field_name']);
 
         if ($options['walker'] !== null) {
-            $column->customWalker = $options['walker'];
+            $field->customWalker = $options['walker'];
         }
 
         if ($options['validation_walker'] !== null) {
-            $column->validationWalker = $options['validation_walker'];
+            $field->validationWalker = $options['validation_walker'];
         }
 
-        $this->fields[$name] = $column;
+        $this->fields[$name] = $field;
 
         return $this;
     }
@@ -115,10 +115,8 @@ abstract class AbstractProcessor
             'order_field' => $this->options['order_field'],
             'default_order' => $defaultOrder,
             'continuation_token_field' => $this->options['continuation_token']['field'] ?? null,
-            'columns' => $this->fields,
-            'orderable_columns' => array_keys(array_filter($this->fields, static function (FieldInterface $column): bool {
-                return $column instanceof OrderableFieldInterface;
-            })),
+            'fields' => $this->fields,
+            'orderable_fields' => array_keys(array_filter($this->fields, static fn (FieldInterface $field) => $field instanceof OrderableFieldInterface)),
         ];
 
         if ($this->options['order_validation_walker'] !== null) {

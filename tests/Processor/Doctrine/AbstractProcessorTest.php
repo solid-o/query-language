@@ -12,7 +12,7 @@ use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Form\QueryType;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
-use Solido\QueryLanguage\Tests\Processor\DummyColumn;
+use Solido\QueryLanguage\Tests\Processor\DummyField;
 use Solido\QueryLanguage\Walker\Validation\OrderWalker;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
@@ -56,7 +56,7 @@ class ConcreteProcessor extends AbstractProcessor
 {
     protected function createField(string $fieldName): FieldInterface
     {
-        return new DummyColumn();
+        return new DummyField();
     }
 
     /**

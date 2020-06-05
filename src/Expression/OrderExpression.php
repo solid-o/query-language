@@ -50,7 +50,7 @@ final class OrderExpression implements ExpressionInterface
     }
 
     /**
-     * Gets the order column.
+     * Gets the order field.
      */
     public function getField(): string
     {

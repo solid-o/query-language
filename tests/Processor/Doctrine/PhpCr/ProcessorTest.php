@@ -47,7 +47,7 @@ class ProcessorTest extends TestCase
         );
     }
 
-    public function testBuiltinColumnWorks(): void
+    public function testBuiltinFieldWorks(): void
     {
         $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['name' => 'goofy']));
@@ -60,7 +60,7 @@ class ProcessorTest extends TestCase
         self::assertEquals('goofy', $result[0]->name);
     }
 
-    public function testBuiltinLikeColumnWorks(): void
+    public function testBuiltinLikeFieldWorks(): void
     {
         $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['name' => '$like(GOOFY)']));
@@ -73,7 +73,7 @@ class ProcessorTest extends TestCase
         self::assertEquals('goofy', $result[0]->name);
     }
 
-    public function testBuiltinOrColumnWorks(): void
+    public function testBuiltinOrFieldWorks(): void
     {
         $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['name' => '$or(goofy, barbar)']));
@@ -88,7 +88,7 @@ class ProcessorTest extends TestCase
         self::assertEquals('barbar', $result[0]->name);
     }
 
-    public function testBuiltinNotColumnWorks(): void
+    public function testBuiltinNotFieldWorks(): void
     {
         $this->processor->addField('name');
         $itr = $this->processor->processRequest(new Request(['name' => '$not($or(goofy, barbar))']));
@@ -99,7 +99,7 @@ class ProcessorTest extends TestCase
         self::assertCount(5, $result);
     }
 
-    public function testBuiltinOrderColumnWorks(): void
+    public function testBuiltinOrderFieldWorks(): void
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
@@ -121,7 +121,7 @@ class ProcessorTest extends TestCase
         self::assertCount(7, $result);
     }
 
-    public function testBuiltinOrderPaginationColumnWorks(): void
+    public function testBuiltinOrderPaginationFieldWorks(): void
     {
         $formFactory = (new FormFactoryBuilder(true))
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
@@ -164,7 +164,7 @@ class ProcessorTest extends TestCase
         self::assertEquals('=ZG9uYWxkIGR1Y2s=_1_epxv00', (string) $itr->getNextPageToken());
     }
 
-    public function testRelationColumnWorks(): void
+    public function testRelationFieldWorks(): void
     {
         $this->processor->addField('foobar');
         $itr = $this->processor->processRequest(new Request(['foobar' => '$entry(foobar, foobar_donald duck)']));
@@ -177,7 +177,7 @@ class ProcessorTest extends TestCase
         self::assertEquals('donald duck', $result[0]->name);
     }
 
-    public function testColumnWithFieldInRelatedEntityWorks(): void
+    public function testFieldWithFieldInRelatedEntityWorks(): void
     {
         $this->processor->addField('foobar', ['field_name' => 'foobar.foobar']);
         $itr = $this->processor->processRequest(new Request(['foobar' => 'foobar_donald duck']));
@@ -349,7 +349,7 @@ class ProcessorTest extends TestCase
         self::assertInstanceOf(DocumentIterator::class, $itr);
     }
 
-    public function testCustomColumnWorks(): void
+    public function testCustomFieldWorks(): void
     {
         $this->processor->addField('foobar', new class(self::$documentManager) implements FieldInterface {
             /** @var DocumentManagerInterface */
