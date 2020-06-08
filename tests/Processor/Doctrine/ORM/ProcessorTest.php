@@ -297,7 +297,7 @@ class ProcessorTest extends TestCase
             }
         });
         $request = new Request(['foobar' => 'foobar_barbar']);
-        $request->headers->set('X-Order', 'foobar, asc');
+        $request->headers->set('X-Order', 'foobar; asc');
         $itr = $this->processor->processRequest($request);
 
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);

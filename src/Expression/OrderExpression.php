@@ -6,6 +6,7 @@ namespace Solido\QueryLanguage\Expression;
 
 use Solido\QueryLanguage\Exception\InvalidHeaderException;
 use Solido\QueryLanguage\Walker\TreeWalkerInterface;
+use function array_map;
 use function assert;
 use function count;
 use function explode;
@@ -38,7 +39,7 @@ final class OrderExpression implements ExpressionInterface
             throw new InvalidHeaderException('Invalid header passed, cannot be parsed');
         }
 
-        $expl = explode(';', $matches[0][0]);
+        $expl = array_map('trim', explode(';', $matches[0][0]));
         if (count($expl) === 1 || ! preg_match('/^(:?a|de)sc$/i', $expl[1])) {
             return new self($expl[0], 'asc');
         }

@@ -361,7 +361,7 @@ class ProcessorTest extends TestCase
             }
 
             /**
-             * @param QueryBuilder        $queryBuilder
+             * @param QueryBuilder $queryBuilder
              */
             public function addCondition($queryBuilder, ExpressionInterface $expression): void
             {
