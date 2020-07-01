@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Solido\QueryLanguage\Processor\Doctrine;
 
 use InvalidArgumentException;
+use Refugis\DoctrineExtra\ObjectIteratorInterface;
 use Solido\Pagination\PageToken;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Form\DTO\Query;
@@ -159,6 +160,12 @@ abstract class AbstractProcessor
      * @return string[]
      */
     abstract protected function getIdentifierFieldNames(): array;
+
+    /**
+     * Builds an ObjectIterator from the given query builder.
+     * Allow to make some final/general customization of the query, before firing it to the database engine.
+     */
+    abstract protected function buildIterator(object $queryBuilder): ObjectIteratorInterface;
 
     /**
      * Parses the ordering expression for continuation token.

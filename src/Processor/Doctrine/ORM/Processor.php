@@ -18,6 +18,7 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use function array_key_first;
+use function assert;
 
 class Processor extends AbstractProcessor
 {
@@ -94,7 +95,14 @@ class Processor extends AbstractProcessor
             $this->queryBuilder->setMaxResults($pageSize);
         }
 
-        return new EntityIterator($this->queryBuilder);
+        return $this->buildIterator($this->queryBuilder);
+    }
+
+    protected function buildIterator(object $queryBuilder): ObjectIteratorInterface
+    {
+        assert($queryBuilder instanceof QueryBuilder);
+
+        return new EntityIterator($queryBuilder);
     }
 
     /**

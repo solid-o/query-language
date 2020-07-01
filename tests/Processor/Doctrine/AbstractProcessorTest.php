@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use Refugis\DoctrineExtra\ObjectIteratorInterface;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Form\QueryType;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
@@ -65,6 +66,14 @@ class ConcreteProcessor extends AbstractProcessor
     protected function getIdentifierFieldNames(): array
     {
         return ['id'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function buildIterator(object $queryBuilder): ObjectIteratorInterface
+    {
+        // Do nothing
     }
 
     /**

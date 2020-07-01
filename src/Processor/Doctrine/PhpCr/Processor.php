@@ -122,7 +122,14 @@ class Processor extends AbstractProcessor
             $this->queryBuilder->setMaxResults($pageSize);
         }
 
-        return new DocumentIterator($this->queryBuilder);
+        return $this->buildIterator($this->queryBuilder);
+    }
+
+    protected function buildIterator(object $queryBuilder): ObjectIteratorInterface
+    {
+        assert($queryBuilder instanceof QueryBuilder);
+
+        return new DocumentIterator($queryBuilder);
     }
 
     /**
