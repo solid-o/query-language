@@ -65,7 +65,7 @@ class Field implements FieldInterface
             $this->searchForDiscriminator($rootEntity, $fieldName);
         }
 
-        $this->mapping = $rootField;
+        $this->mapping = $rootField ?? [];
         $this->fieldType = isset($this->mapping['targetEntity']) ? 'string' : ($this->mapping['type'] ?? 'string');
         $this->associations = [];
 
