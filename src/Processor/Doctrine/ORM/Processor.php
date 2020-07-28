@@ -67,7 +67,10 @@ class Processor extends AbstractProcessor
         }
 
         $this->attachToQueryBuilder($result->filters);
-        $pageSize = $this->options['default_page_size'] ?? $result->limit;
+        $pageSize = $result->limit ?? $this->options['default_page_size'];
+        if ($this->options['max_page_size'] !== null && $pageSize > $this->options['max_page_size']) {
+            $pageSize = $this->options['max_page_size'];
+        }
 
         if ($result->skip !== null) {
             $this->queryBuilder->setFirstResult($result->skip);

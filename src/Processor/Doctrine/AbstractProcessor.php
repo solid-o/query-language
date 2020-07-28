@@ -235,6 +235,8 @@ abstract class AbstractProcessor
             ->setAllowedTypes('order_field', ['null', 'string'])
             ->setDefault('default_page_size', null)
             ->setAllowedTypes('default_page_size', ['null', 'int'])
+            ->setDefault('max_page_size', null)
+            ->setAllowedTypes('max_page_size', ['null', 'int'])
             ->setDefault('order_validation_walker', null)
             ->setAllowedTypes('order_validation_walker', ['null', ValidationWalkerInterface::class])
             ->setDefault('continuation_token', [
