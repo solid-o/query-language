@@ -90,7 +90,8 @@ class Processor extends AbstractProcessor
 
             $key = array_key_first($ordering);
             if ($key !== null) {
-                $this->queryBuilder->orderBy($key, $ordering[$key]);
+                $alias = $this->queryBuilder->getRootAliases()[0];
+                $this->queryBuilder->orderBy($alias . '.' . $key, $ordering[$key]);
             }
         }
 
