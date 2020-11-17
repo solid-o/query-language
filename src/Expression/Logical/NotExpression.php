@@ -9,6 +9,7 @@ use Solido\QueryLanguage\Expression\Comparison\ComparisonExpressionInterface;
 use Solido\QueryLanguage\Expression\EntryExpression;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Walker\TreeWalkerInterface;
+
 use function get_class;
 use function Safe\sprintf;
 

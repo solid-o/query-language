@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Solido\QueryLanguage\Expression\Comparison;
 
 use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
+
 use function Safe\sprintf;
 
 final class LessThanOrEqualExpression extends ComparisonExpression

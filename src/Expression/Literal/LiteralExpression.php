@@ -7,6 +7,7 @@ namespace Solido\QueryLanguage\Expression\Literal;
 use Solido\QueryLanguage\Expression\ValueExpression;
 use Solido\QueryLanguage\Walker\TreeWalkerInterface;
 use TypeError;
+
 use function get_class;
 use function gettype;
 use function is_numeric;
@@ -38,12 +39,16 @@ abstract class LiteralExpression extends ValueExpression
             case $value === 'true':
             case $value === 'false':
                 return new BooleanExpression($value === 'true');
+
             case $value === 'null':
                 return new NullExpression();
+
             case preg_match('/^\d+$/', $value) === 1:
                 return new IntegerExpression((int) $value);
+
             case is_numeric($value):
                 return new NumericExpression($value);
+
             default:
                 return new StringExpression($value);
         }

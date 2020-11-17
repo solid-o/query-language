@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Solido\QueryLanguage\Expression;
 
 use ReflectionClass;
+
 use function Safe\preg_replace;
 
 trait ExpressionTrait

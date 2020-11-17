@@ -7,6 +7,7 @@ namespace Solido\QueryLanguage\Expression\Logical;
 use Solido\QueryLanguage\Expression\AllExpression;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Walker\TreeWalkerInterface;
+
 use function array_filter;
 use function array_values;
 use function count;
@@ -42,8 +43,10 @@ final class AndExpression implements LogicalExpressionInterface
         switch (count($arguments)) {
             case 0:
                 return new AllExpression();
+
             case 1:
                 return $arguments[0];
+
             default:
                 return new self($arguments);
         }

@@ -8,6 +8,7 @@ use Solido\Pagination\Exception\InvalidTokenException;
 use Solido\Pagination\PageToken;
 use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
+
 use function is_string;
 
 class PageTokenTransformer implements DataTransformerInterface

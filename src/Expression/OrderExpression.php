@@ -6,6 +6,7 @@ namespace Solido\QueryLanguage\Expression;
 
 use Solido\QueryLanguage\Exception\InvalidHeaderException;
 use Solido\QueryLanguage\Walker\TreeWalkerInterface;
+
 use function array_map;
 use function assert;
 use function count;

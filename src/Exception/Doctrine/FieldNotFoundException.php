@@ -6,6 +6,7 @@ namespace Solido\QueryLanguage\Exception\Doctrine;
 
 use DomainException;
 use Solido\QueryLanguage\Exception\ExceptionInterface;
+
 use function Safe\sprintf;
 
 class FieldNotFoundException extends DomainException implements ExceptionInterface

@@ -6,6 +6,7 @@ namespace Solido\QueryLanguage\Expression;
 
 use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use Solido\QueryLanguage\Walker\TreeWalkerInterface;
+
 use function assert;
 
 final class EntryExpression implements ExpressionInterface

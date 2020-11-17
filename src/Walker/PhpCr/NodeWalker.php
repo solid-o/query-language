@@ -24,6 +24,7 @@ use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use Solido\QueryLanguage\Expression\Literal\NullExpression;
 use Solido\QueryLanguage\Expression\ValueExpression;
 use Solido\QueryLanguage\Walker\AbstractWalker;
+
 use function assert;
 use function explode;
 

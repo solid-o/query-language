@@ -10,6 +10,7 @@ use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\DBAL\SqlWalker;
+
 use function is_string;
 
 /**
@@ -77,6 +78,6 @@ class Field implements FieldInterface
      */
     public function getOrder(object $queryBuilder, OrderExpression $orderExpression): array
     {
-        return [ $this->fieldName, $orderExpression->getDirection() ];
+        return [$this->fieldName, $orderExpression->getDirection()];
     }
 }

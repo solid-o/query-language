@@ -9,6 +9,7 @@ use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Grammar\Grammar;
 use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
+
 use function is_string;
 
 class StringToExpresionTransformer implements DataTransformerInterface

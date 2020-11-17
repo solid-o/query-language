@@ -7,6 +7,7 @@ namespace Solido\QueryLanguage\Walker\Validation;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use Solido\QueryLanguage\Expression\ValueExpression;
+
 use function implode;
 use function in_array;
 

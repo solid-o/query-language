@@ -7,6 +7,7 @@ namespace Solido\QueryLanguage\Expression\Comparison;
 use Solido\QueryLanguage\Expression\ExpressionTrait;
 use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use Solido\QueryLanguage\Walker\TreeWalkerInterface;
+
 use function assert;
 
 abstract class ComparisonExpression implements ComparisonExpressionInterface

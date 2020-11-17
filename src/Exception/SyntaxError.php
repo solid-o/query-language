@@ -6,6 +6,7 @@ namespace Solido\QueryLanguage\Exception;
 
 use RuntimeException;
 use Throwable;
+
 use function max;
 use function min;
 use function Safe\substr;

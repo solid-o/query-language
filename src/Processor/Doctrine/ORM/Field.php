@@ -15,6 +15,7 @@ use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\Doctrine\DiscriminatorWalker;
 use Solido\QueryLanguage\Walker\Doctrine\DqlWalker;
 use Solido\QueryLanguage\Walker\Validation\EnumWalker;
+
 use function array_keys;
 use function count;
 use function is_string;
@@ -253,6 +254,6 @@ class Field implements FieldInterface
      */
     public function getOrder(object $queryBuilder, OrderExpression $orderExpression): array
     {
-        return [ $this->fieldName, $orderExpression->getDirection() ];
+        return [$this->fieldName, $orderExpression->getDirection()];
     }
 }

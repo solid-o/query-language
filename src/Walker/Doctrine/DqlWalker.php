@@ -16,6 +16,7 @@ use Solido\QueryLanguage\Expression\Literal\NullExpression;
 use Solido\QueryLanguage\Expression\Literal\StringExpression;
 use Solido\QueryLanguage\Expression\ValueExpression;
 use Solido\QueryLanguage\Walker\AbstractWalker;
+
 use function array_map;
 use function mb_strtolower;
 use function Safe\preg_replace;
@@ -56,9 +57,11 @@ class DqlWalker extends AbstractWalker
             case Types::DATETIME_MUTABLE:
             case Types::DATETIMETZ_MUTABLE:
                 return new DateTime($value);
+
             case Types::DATETIME_IMMUTABLE:
             case Types::DATETIMETZ_IMMUTABLE:
                 return new DateTimeImmutable($value);
+
             default:
                 return $value;
         }

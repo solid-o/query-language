@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+
 use function array_filter;
 use function array_keys;
 use function assert;
@@ -135,9 +136,11 @@ abstract class AbstractProcessor
             assert($range !== null);
 
             if (preg_match('/^(units=(?P<start>\d+)-(?P<end>\d+)|after=(?P<token>[^\s,.]+))$/', $range, $matches)) {
-                if ($dto->skip === null && $dto->limit === null &&
+                if (
+                    $dto->skip === null && $dto->limit === null &&
                     isset($matches['start'], $matches['end']) &&
-                    $matches['start'] !== '' && $matches['end'] !== '') {
+                    $matches['start'] !== '' && $matches['end'] !== ''
+                ) {
                     $dto->skip = (int) $matches['start'];
                     $dto->limit = ((int) $matches['end']) - ((int) $matches['start']) + 1;
                 } elseif ($dto->pageToken === null && isset($matches['token']) && PageToken::isValid($matches['token'])) {

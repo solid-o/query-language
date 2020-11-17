@@ -8,6 +8,7 @@ use MyCLabs\Enum\Enum;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use TypeError;
+
 use function class_exists;
 use function get_debug_type;
 use function implode;

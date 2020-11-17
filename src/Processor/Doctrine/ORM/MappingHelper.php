@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Solido\QueryLanguage\Processor\Doctrine\ORM;
 
 use Doctrine\ORM\Mapping\ClassMetadata;
+
 use function array_key_last;
 use function assert;
 use function explode;
