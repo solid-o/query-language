@@ -11,6 +11,7 @@ use Solido\QueryLanguage\Expression\EntryExpression;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\Logical;
 use Solido\QueryLanguage\Expression\OrderExpression;
+
 use function get_class;
 
 final class Grammar extends AbstractGrammar
@@ -55,22 +56,31 @@ final class Grammar extends AbstractGrammar
         switch ($type) {
             case 'all':
                 return new AllExpression();
+
             case 'not':
                 return Logical\NotExpression::create($value);
+
             case 'eq':
                 return new Comparison\EqualExpression($value);
+
             case 'neq':
                 return Logical\NotExpression::create(new Comparison\EqualExpression($value));
+
             case 'lt':
                 return new Comparison\LessThanExpression($value);
+
             case 'lte':
                 return new Comparison\LessThanOrEqualExpression($value);
+
             case 'gt':
                 return new Comparison\GreaterThanExpression($value);
+
             case 'gte':
                 return new Comparison\GreaterThanOrEqualExpression($value);
+
             case 'like':
                 return new Comparison\LikeExpression($value);
+
             default:
                 throw new InvalidArgumentException('Unknown unary operator "' . $type . '"');
         }
@@ -84,8 +94,10 @@ final class Grammar extends AbstractGrammar
         switch ($type) {
             case 'range':
                 return Logical\AndExpression::create([new Comparison\GreaterThanOrEqualExpression($left), new Comparison\LessThanOrEqualExpression($right)]);
+
             case 'entry':
                 return EntryExpression::create($left, $right);
+
             default:
                 throw new InvalidArgumentException('Unknown binary operator "' . $type . '"');
         }
@@ -111,9 +123,11 @@ final class Grammar extends AbstractGrammar
         switch ($type) {
             case 'and':
                 return Logical\AndExpression::create($arguments);
+
             case 'in':
             case 'or':
                 return Logical\OrExpression::create($arguments);
+
             default:
                 throw new InvalidArgumentException('Unknown operator "' . $type . '"');
         }
