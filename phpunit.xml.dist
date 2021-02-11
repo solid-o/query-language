@@ -5,6 +5,9 @@
     <include>
       <directory>src</directory>
     </include>
+    <exclude>
+      <file>src/Grammar/template.parser.php</file>
+    </exclude>
   </coverage>
   <php>
     <ini name="error_reporting" value="-1"/>
