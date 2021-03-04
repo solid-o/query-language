@@ -51,7 +51,7 @@ final class Grammar extends AbstractGrammar
     /**
      * {@inheritdoc}
      */
-    protected function unaryExpression(string $type, $value)
+    protected function unaryExpression(string $type, $value): ExpressionInterface
     {
         switch ($type) {
             case 'all':
@@ -89,7 +89,7 @@ final class Grammar extends AbstractGrammar
     /**
      * {@inheritdoc}
      */
-    protected function binaryExpression(string $type, $left, $right)
+    protected function binaryExpression(string $type, $left, $right): ExpressionInterface
     {
         switch ($type) {
             case 'range':
@@ -106,11 +106,9 @@ final class Grammar extends AbstractGrammar
     /**
      * Evaluates an order expression.
      *
-     * @return OrderExpression
-     *
      * @phpstan-param 'asc'|'desc' $direction
      */
-    protected function orderExpression(string $field, string $direction)
+    protected function orderExpression(string $field, string $direction): ExpressionInterface
     {
         return new OrderExpression($field, $direction);
     }
@@ -118,7 +116,7 @@ final class Grammar extends AbstractGrammar
     /**
      * {@inheritdoc}
      */
-    protected function variadicExpression(string $type, array $arguments)
+    protected function variadicExpression(string $type, array $arguments): ExpressionInterface
     {
         switch ($type) {
             case 'and':

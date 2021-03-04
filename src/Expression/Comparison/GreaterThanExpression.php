@@ -11,7 +11,7 @@ use function Safe\sprintf;
 final class GreaterThanExpression extends ComparisonExpression
 {
     /**
-     * @param LiteralExpression $value
+     * @param mixed|LiteralExpression $value
      */
     public function __construct($value)
     {

@@ -22,7 +22,7 @@ abstract class ComparisonExpression implements ComparisonExpressionInterface
     protected string $operator;
 
     /**
-     * @param LiteralExpression $value
+     * @param mixed|LiteralExpression $value
      */
     public function __construct($value, string $operator)
     {
