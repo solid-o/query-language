@@ -150,7 +150,7 @@ class Field implements FieldInterface
             if ($this->isOwningSide()) {
                 $subQb->andWhere($subQb->expr()->eq($this->rootAlias . '.' . $alias, $alias));
             } else {
-                $subQb->andWhere($subQb->expr()->eq($alias . '.' . $this->mapping['inversedBy'], $this->rootAlias));
+                $subQb->andWhere($subQb->expr()->eq($alias . '.' . $this->mapping['mappedBy'], $this->rootAlias));
             }
 
             $queryBuilder
