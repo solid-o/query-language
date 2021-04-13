@@ -45,4 +45,3 @@ jobs:
                       -Dsonar.tests=tests
                       -Dsonar.php.coverage.reportPaths=phpunit/phpunit.coverage.xml
                       -Dsonar.php.tests.reportPath=phpunit/junit.xml
-

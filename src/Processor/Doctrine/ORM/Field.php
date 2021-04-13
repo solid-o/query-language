@@ -237,12 +237,13 @@ class Field implements FieldInterface
 
         while ($rest !== null) {
             $targetEntity = $entityManager->getClassMetadata($associationField['targetEntity']);
-            [$associationField, $rest] = MappingHelper::processFieldName($targetEntity, $rest);
+            [$associationField, $newRest] = MappingHelper::processFieldName($targetEntity, $rest);
 
             if ($associationField === null) {
                 throw new FieldNotFoundException($rest, $targetEntity->name);
             }
 
+            $rest = $newRest;
             $associations[] = $associationField;
         }
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "95bd1e668aa303722e2bde9fcb0653ac",
+    "content-hash": "eaead635b57853cd44dcf50bbf430993",
     "packages": [
         {
             "name": "psr/container",
@@ -170,21 +170,21 @@
         },
         {
             "name": "solido/pagination",
-            "version": "v0.1.1",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/solid-o/pagination.git",
-                "reference": "6237640f48576d67deeaf0232ff596182a09f9b7"
+                "reference": "6777e8fd92a66ae3d620786746273f9afe50ceb3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/solid-o/pagination/zipball/6237640f48576d67deeaf0232ff596182a09f9b7",
-                "reference": "6237640f48576d67deeaf0232ff596182a09f9b7",
+                "url": "https://api.github.com/repos/solid-o/pagination/zipball/6777e8fd92a66ae3d620786746273f9afe50ceb3",
+                "reference": "6777e8fd92a66ae3d620786746273f9afe50ceb3",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.4|^8.0",
-                "symfony/property-access": "^4.4|^5.0"
+                "php": "^7.4 || ^8.0",
+                "symfony/property-access": "^4.4 || ^5.0"
             },
             "require-dev": {
                 "cakephp/chronos": "^2.0",
@@ -198,10 +198,11 @@
                 "refugis/elastica-odm": "2.x-dev",
                 "roave/security-advisories": "dev-master",
                 "solido/php-coding-standards": "dev-master",
-                "solido/test-utils": "*",
-                "symfony/cache": "^4.4|^5.0",
-                "symfony/http-foundation": "^4.4|^5.0"
+                "solido/test-utils": "dev-master",
+                "symfony/cache": "^4.4 || ^5.0",
+                "symfony/http-foundation": "^4.4 || ^5.0"
             },
+            "default-branch": true,
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -230,9 +231,9 @@
             "description": "Pagination (and endless-pagination) utilities for REST apis",
             "support": {
                 "issues": "https://github.com/solid-o/pagination/issues",
-                "source": "https://github.com/solid-o/pagination/tree/v0.1.1"
+                "source": "https://github.com/solid-o/pagination/tree/master"
             },
-            "time": "2021-03-23T13:15:39+00:00"
+            "time": "2021-04-13T12:21:56+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -4533,16 +4534,16 @@
         },
         {
             "name": "phpcr/phpcr-utils",
-            "version": "1.5.1",
+            "version": "1.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpcr/phpcr-utils.git",
-                "reference": "3be690cb40a30f702c5f9f475f1cd97af0641970"
+                "reference": "aba3bd1caae3279e2ec82149490c2fcda89d557c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpcr/phpcr-utils/zipball/3be690cb40a30f702c5f9f475f1cd97af0641970",
-                "reference": "3be690cb40a30f702c5f9f475f1cd97af0641970",
+                "url": "https://api.github.com/repos/phpcr/phpcr-utils/zipball/aba3bd1caae3279e2ec82149490c2fcda89d557c",
+                "reference": "aba3bd1caae3279e2ec82149490c2fcda89d557c",
                 "shasum": ""
             },
             "require": {
@@ -4606,9 +4607,9 @@
             ],
             "support": {
                 "issues": "https://github.com/phpcr/phpcr-utils/issues",
-                "source": "https://github.com/phpcr/phpcr-utils/tree/1.5.1"
+                "source": "https://github.com/phpcr/phpcr-utils/tree/1.5.2"
             },
-            "time": "2020-10-08T11:48:18+00:00"
+            "time": "2021-04-13T06:21:33+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -8233,12 +8234,13 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "roave/security-advisories": 20,
+        "solido/pagination": 20,
         "solido/php-coding-standards": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^7.4|^8.0"
+        "php": "^7.4 || ^8.0"
     },
     "platform-dev": [],
     "plugin-api-version": "2.0.0"

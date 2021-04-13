@@ -19,10 +19,10 @@
         "csfix": "vendor/bin/phpcbf --standard=Solido src/"
     },
     "require": {
-        "php": "^7.4|^8.0",
-        "symfony/form": "^4.4|^5.0",
-        "symfony/validator": "^4.4|^5.0",
-        "symfony/http-foundation": "^4.4|^5.0",
+        "php": "^7.4 || ^8.0",
+        "symfony/form": "^4.4 || ^5.0",
+        "symfony/validator": "^4.4 || ^5.0",
+        "symfony/http-foundation": "^4.4 || ^5.0",
         "symfony/polyfill-php80": "^1.10",
         "solido/common": "*",
         "solido/pagination": "*"
@@ -42,8 +42,8 @@
         "roave/security-advisories": "dev-master",
         "solido/dto-management": "*",
         "solido/php-coding-standards": "dev-master",
-        "symfony/cache": "^4.4|^5.0",
-        "symfony/var-dumper": "^4.4|^5.0"
+        "symfony/cache": "^4.4 || ^5.0",
+        "symfony/var-dumper": "^4.4 || ^5.0"
     },
     "autoload": {
         "psr-4": {
