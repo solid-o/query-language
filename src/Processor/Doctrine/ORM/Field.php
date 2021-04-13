@@ -114,7 +114,7 @@ class Field implements FieldInterface
      */
     private function addAssociationCondition(QueryBuilder $queryBuilder, ExpressionInterface $expression): void
     {
-        $alias = $this->getMappingFieldName();
+        $alias = 'sub_' . $this->getMappingFieldName();
         $walker = $this->customWalker;
 
         $subQb = $this->entityManager->createQueryBuilder()
@@ -126,9 +126,8 @@ class Field implements FieldInterface
         $currentAlias = $alias;
         foreach ($this->associations as $association) {
             if (isset($association['targetEntity'])) {
-                $subQb->join($currentFieldName . '.' . $association['fieldName'], $association['fieldName']);
-                $currentAlias = $association['fieldName'];
-                $currentFieldName = $association['fieldName'];
+                $subQb->join($currentFieldName . '.' . $association['fieldName'], 'sub_' . $association['fieldName']);
+                $currentAlias = $currentFieldName = 'sub_' . $association['fieldName'];
             } else {
                 $currentFieldName = $currentAlias . '.' . $association['fieldName'];
             }
@@ -145,10 +144,10 @@ class Field implements FieldInterface
         if ($this->isManyToMany()) {
             $queryBuilder
                 ->distinct()
-                ->join($this->rootAlias . '.' . $alias, $alias, Join::WITH, $subQb->getDQLPart('where'));
+                ->join($this->rootAlias . '.' . $this->getMappingFieldName(), $alias, Join::WITH, $subQb->getDQLPart('where'));
         } else {
             if ($this->isOwningSide()) {
-                $subQb->andWhere($subQb->expr()->eq($this->rootAlias . '.' . $alias, $alias));
+                $subQb->andWhere($subQb->expr()->eq($this->rootAlias . '.' . $this->getMappingFieldName(), $alias));
             } else {
                 $subQb->andWhere($subQb->expr()->eq($alias . '.' . $this->mapping['mappedBy'], $this->rootAlias));
             }
@@ -237,13 +236,12 @@ class Field implements FieldInterface
 
         while ($rest !== null) {
             $targetEntity = $entityManager->getClassMetadata($associationField['targetEntity']);
-            [$associationField, $newRest] = MappingHelper::processFieldName($targetEntity, $rest);
+            [$associationField, $rest] = MappingHelper::processFieldName($targetEntity, $rest);
 
             if ($associationField === null) {
                 throw new FieldNotFoundException($rest, $targetEntity->name);
             }
 
-            $rest = $newRest;
             $associations[] = $associationField;
         }
 
