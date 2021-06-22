@@ -14,6 +14,7 @@ use Refugis\DoctrineExtra\ObjectIteratorInterface;
 use Refugis\DoctrineExtra\ODM\PhpCr\DocumentIterator;
 use Solido\Pagination\Doctrine\PhpCr\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
+use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -50,7 +51,9 @@ class Processor extends AbstractProcessor
         $sourceNode = $fromNode->getChildOfType(AbstractNode::NT_SOURCE);
         assert($sourceNode instanceof SourceDocument);
 
-        $classMetadata = $this->documentManager->getClassMetadata($sourceNode->getDocumentFqn());
+        /** @phpstan-var class-string $sourceFqn */
+        $sourceFqn = $sourceNode->getDocumentFqn();
+        $classMetadata = $this->documentManager->getClassMetadata($sourceFqn);
         assert($classMetadata instanceof ClassMetadata);
 
         $this->rootDocument = $classMetadata;
@@ -84,19 +87,25 @@ class Processor extends AbstractProcessor
         }
 
         $this->attachToQueryBuilder($result->filters);
+        if ($result->skip !== null) {
+            $this->queryBuilder->setFirstResult($result->skip);
+        }
+
+        return $this->buildIterator($this->queryBuilder, $result);
+    }
+
+    protected function buildIterator(object $queryBuilder, Query $result): ObjectIteratorInterface
+    {
+        assert($queryBuilder instanceof QueryBuilder);
         $pageSize = $result->limit ?? $this->options['default_page_size'];
         if ($this->options['max_page_size'] !== null && $pageSize > $this->options['max_page_size']) {
             $pageSize = $this->options['max_page_size'];
         }
 
-        if ($result->skip !== null) {
-            $this->queryBuilder->setFirstResult($result->skip);
-        }
-
         if ($result->ordering !== null) {
-            $ordering = $this->parseOrderings($this->queryBuilder, $result->ordering);
+            $ordering = $this->parseOrderings($queryBuilder, $result->ordering);
             if ($ordering && $this->options['continuation_token']) {
-                $iterator = new PagerIterator($this->queryBuilder, $ordering);
+                $iterator = new PagerIterator($queryBuilder, $ordering);
                 $iterator->setToken($result->pageToken);
                 if ($pageSize !== null) {
                     $iterator->setPageSize($pageSize);
@@ -108,30 +117,23 @@ class Processor extends AbstractProcessor
             $key = array_key_first($ordering);
 
             if ($key !== null) {
-                $fromNode = $this->queryBuilder->getChildOfType(AbstractNode::NT_FROM);
+                $fromNode = $queryBuilder->getChildOfType(AbstractNode::NT_FROM);
                 assert($fromNode instanceof From);
                 $source = $fromNode->getChildOfType(AbstractNode::NT_SOURCE);
                 assert($source instanceof SourceDocument);
                 $alias = $source->getAlias();
 
                 if ($this->rootDocument->getTypeOfField($key) === 'nodename') {
-                    $this->queryBuilder->orderBy()->{$ordering[$key]}()->localName($alias);
+                    $queryBuilder->orderBy()->{$ordering[$key]}()->localName($alias);
                 } else {
-                    $this->queryBuilder->orderBy()->{$ordering[$key]}()->field($alias . '.' . $key);
+                    $queryBuilder->orderBy()->{$ordering[$key]}()->field($alias . '.' . $key);
                 }
             }
         }
 
         if ($pageSize !== null) {
-            $this->queryBuilder->setMaxResults($pageSize);
+            $queryBuilder->setMaxResults($pageSize);
         }
-
-        return $this->buildIterator($this->queryBuilder);
-    }
-
-    protected function buildIterator(object $queryBuilder): ObjectIteratorInterface
-    {
-        assert($queryBuilder instanceof QueryBuilder);
 
         return new DocumentIterator($queryBuilder);
     }

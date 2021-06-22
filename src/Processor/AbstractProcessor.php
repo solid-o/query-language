@@ -132,13 +132,12 @@ abstract class AbstractProcessor
      *
      * @return Iterator<object>
      */
-    abstract protected function buildIterator(object $queryBuilder): Iterator;
+    abstract protected function buildIterator(object $queryBuilder, Query $result): Iterator;
 
     /**
      * Parses the ordering expression for continuation token.
      *
      * @return array<string, string>
-     *
      * @phpstan-return array<string, 'asc'|'desc'>
      */
     protected function parseOrderings(object $queryBuilder, OrderExpression $ordering): array

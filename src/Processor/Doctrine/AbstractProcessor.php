@@ -7,6 +7,7 @@ namespace Solido\QueryLanguage\Processor\Doctrine;
 use InvalidArgumentException;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
 use Solido\QueryLanguage\Expression\OrderExpression;
+use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Processor\AbstractProcessor as BaseAbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface as DoctrineFieldInterface;
 use Solido\QueryLanguage\Processor\FieldInterface;
@@ -68,13 +69,12 @@ abstract class AbstractProcessor extends BaseAbstractProcessor
      * Builds an ObjectIterator from the given query builder.
      * Allow to make some final/general customization of the query, before firing it to the database engine.
      */
-    abstract protected function buildIterator(object $queryBuilder): ObjectIteratorInterface;
+    abstract protected function buildIterator(object $queryBuilder, Query $result): ObjectIteratorInterface;
 
     /**
      * Parses the ordering expression for continuation token.
      *
      * @return array<string, string>
-     *
      * @phpstan-return array<string, 'asc'|'desc'>
      */
     protected function parseOrderings(object $queryBuilder, OrderExpression $ordering): array

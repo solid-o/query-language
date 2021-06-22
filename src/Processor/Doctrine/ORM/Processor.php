@@ -11,6 +11,7 @@ use Refugis\DoctrineExtra\ObjectIteratorInterface;
 use Refugis\DoctrineExtra\ORM\EntityIterator;
 use Solido\Pagination\Doctrine\ORM\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
+use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
@@ -30,7 +31,6 @@ class Processor extends AbstractProcessor
 
     /**
      * @param mixed[] $options
-     *
      * @phpstan-param array{order_field?:?string, skip_field?:?string, limit_field?:?string, default_order?:?string, default_page_size?:?int, order_validation_walker?:?ValidationWalkerInterface, continuation_token?:bool|array{field:string, checksum_field:string}} $options
      */
     public function __construct(QueryBuilder $queryBuilder, FormFactoryInterface $formFactory, array $options = [])
@@ -68,19 +68,25 @@ class Processor extends AbstractProcessor
         }
 
         $this->attachToQueryBuilder($result->filters);
+        if ($result->skip !== null) {
+            $this->queryBuilder->setFirstResult($result->skip);
+        }
+
+        return $this->buildIterator($this->queryBuilder, $result);
+    }
+
+    protected function buildIterator(object $queryBuilder, Query $result): ObjectIteratorInterface
+    {
+        assert($queryBuilder instanceof QueryBuilder);
         $pageSize = $result->limit ?? $this->options['default_page_size'];
         if ($this->options['max_page_size'] !== null && $pageSize > $this->options['max_page_size']) {
             $pageSize = $this->options['max_page_size'];
         }
 
-        if ($result->skip !== null) {
-            $this->queryBuilder->setFirstResult($result->skip);
-        }
-
         if ($result->ordering !== null) {
-            $ordering = $this->parseOrderings($this->queryBuilder, $result->ordering);
+            $ordering = $this->parseOrderings($queryBuilder, $result->ordering);
             if ($ordering && $this->options['continuation_token']) {
-                $iterator = new PagerIterator($this->queryBuilder, $ordering);
+                $iterator = new PagerIterator($queryBuilder, $ordering);
                 $iterator->setToken($result->pageToken);
                 if ($pageSize !== null) {
                     $iterator->setPageSize($pageSize);
@@ -91,21 +97,14 @@ class Processor extends AbstractProcessor
 
             $key = array_key_first($ordering);
             if ($key !== null) {
-                $alias = $this->queryBuilder->getRootAliases()[0];
-                $this->queryBuilder->orderBy($alias . '.' . $key, $ordering[$key]);
+                $alias = $queryBuilder->getRootAliases()[0];
+                $queryBuilder->orderBy($alias . '.' . $key, $ordering[$key]);
             }
         }
 
         if ($pageSize !== null) {
-            $this->queryBuilder->setMaxResults($pageSize);
+            $queryBuilder->setMaxResults($pageSize);
         }
-
-        return $this->buildIterator($this->queryBuilder);
-    }
-
-    protected function buildIterator(object $queryBuilder): ObjectIteratorInterface
-    {
-        assert($queryBuilder instanceof QueryBuilder);
 
         return new EntityIterator($queryBuilder);
     }

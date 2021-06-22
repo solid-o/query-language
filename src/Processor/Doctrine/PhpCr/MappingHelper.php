@@ -22,8 +22,7 @@ final class MappingHelper
      * Returns the root field (if found) and the rest part as an array of strings.
      *
      * @return mixed[]
-     *
-     * @phpstan-return array{array{id?: bool, fieldName: string, type?: string, targetDocument?: string, sourceDocument?: string}, string|null}
+     * @phpstan-return array{array{id?: bool, fieldName: string, type?: string, targetDocument?: class-string, sourceDocument?: class-string}, string|null}
      */
     public static function processFieldName(ClassMetadata $classMetadata, string $fieldName): array
     {

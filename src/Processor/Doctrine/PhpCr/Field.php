@@ -38,7 +38,7 @@ class Field implements FieldInterface
 
     /**
      * @var array<string, string|bool>
-     * @phpstan-var array{id?: bool, fieldName: string, type?: string, targetDocument?: string, sourceDocument?: string}
+     * @phpstan-var array{id?: bool, fieldName: string, type?: string, targetDocument?: class-string, sourceDocument?: class-string}
      */
     private array $mapping;
 
@@ -222,6 +222,8 @@ class Field implements FieldInterface
 
     /**
      * Gets the target document class.
+     *
+     * @phpstan-return class-string
      */
     private function getTargetDocument(): string
     {

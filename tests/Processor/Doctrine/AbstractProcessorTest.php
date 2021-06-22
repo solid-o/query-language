@@ -71,7 +71,7 @@ class ConcreteProcessor extends AbstractProcessor
     /**
      * {@inheritdoc}
      */
-    protected function buildIterator(object $queryBuilder): ObjectIteratorInterface
+    protected function buildIterator(object $queryBuilder, Query $result): ObjectIteratorInterface
     {
         // Do nothing
     }

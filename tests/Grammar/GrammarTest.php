@@ -40,11 +40,18 @@ class GrammarTest extends TestCase
         ];
 
         yield ['$eq(2)', new Expression\Comparison\EqualExpression(Expression\Literal\LiteralExpression::create('2'))];
+        yield ['$eq(null)', new Expression\Comparison\EqualExpression((new \ReflectionClass(Expression\Literal\NullExpression::class))->newInstanceWithoutConstructor())];
         yield [
             '$neq(2)',
             Expression\Logical\NotExpression::create(
                 new Expression\Comparison\EqualExpression(Expression\Literal\LiteralExpression::create('2'))
             ),
+        ];
+        yield [
+            '$neq(null)',
+            Expression\Logical\NotExpression::create(
+                new Expression\Comparison\EqualExpression((new \ReflectionClass(Expression\Literal\NullExpression::class))->newInstanceWithoutConstructor())
+            )
         ];
 
         yield ['$like(foobar)', new Expression\Comparison\LikeExpression(Expression\Literal\LiteralExpression::create('foobar'))];

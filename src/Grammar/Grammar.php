@@ -9,6 +9,7 @@ use Solido\QueryLanguage\Expression\AllExpression;
 use Solido\QueryLanguage\Expression\Comparison;
 use Solido\QueryLanguage\Expression\EntryExpression;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
+use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use Solido\QueryLanguage\Expression\Logical;
 use Solido\QueryLanguage\Expression\OrderExpression;
 
@@ -59,6 +60,9 @@ final class Grammar extends AbstractGrammar
 
             case 'not':
                 return Logical\NotExpression::create($value);
+
+            case 'exists':
+                return Logical\NotExpression::create(new Comparison\EqualExpression(LiteralExpression::create('null')));
 
             case 'eq':
                 return new Comparison\EqualExpression($value);
