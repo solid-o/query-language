@@ -6,12 +6,10 @@ namespace Solido\QueryLanguage\Processor\Doctrine;
 
 use InvalidArgumentException;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
-use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Processor\AbstractProcessor as BaseAbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface as DoctrineFieldInterface;
 use Solido\QueryLanguage\Processor\FieldInterface;
-use Solido\QueryLanguage\Processor\OrderableFieldInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use function Safe\sprintf;
@@ -71,24 +69,8 @@ abstract class AbstractProcessor extends BaseAbstractProcessor
      */
     abstract protected function buildIterator(object $queryBuilder, Query $result): ObjectIteratorInterface;
 
-    /**
-     * Parses the ordering expression for continuation token.
-     *
-     * @return array<string, string>
-     * @phpstan-return array<string, 'asc'|'desc'>
-     */
-    protected function parseOrderings(object $queryBuilder, OrderExpression $ordering): array
+    protected function getOrderChecksumFieldName(): string
     {
-        $field = $this->fields[$ordering->getField()];
-        if (! ($field instanceof OrderableFieldInterface)) {
-            return [];
-        }
-
-        $order = $field->getOrder($queryBuilder, $ordering);
-        if (empty($order)) {
-            return [];
-        }
-
         $checksumField = $this->getIdentifierFieldNames()[0];
         if (isset($this->options['continuation_token']['checksum_field'])) {
             $checksumField = $this->options['continuation_token']['checksum_field'];
@@ -99,9 +81,6 @@ abstract class AbstractProcessor extends BaseAbstractProcessor
             $checksumField = $this->fields[$checksumField]->fieldName;
         }
 
-        return [
-            $order[0] => $order[1],
-            $checksumField => 'asc',
-        ];
+        return $checksumField;
     }
 }

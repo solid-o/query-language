@@ -79,7 +79,6 @@ abstract class AbstractProcessor
 
         $orderHeader = $adapter->getHeader('X-Order')[0] ?? null;
         if ($orderHeader) {
-            // @phpstan-ignore-next-line
             $defaultOrder = OrderExpression::fromHeader($orderHeader);
         }
 
@@ -104,8 +103,10 @@ abstract class AbstractProcessor
         }
 
         $range = $adapter->getHeader('Range')[0] ?? null;
-        if ($this->options['range-header'] && ! empty($range) &&
-            preg_match('/^(units=(?P<start>\d+)-(?P<end>\d+)|after=(?P<token>[^\s,.]+))$/', $range, $matches)) {
+        if (
+            $this->options['range-header'] && ! empty($range) &&
+            preg_match('/^(units=(?P<start>\d+)-(?P<end>\d+)|after=(?P<token>[^\s,.]+))$/', $range, $matches)
+        ) {
             if (
                 $dto->skip === null && $dto->limit === null &&
                 isset($matches['start'], $matches['end']) &&
@@ -159,16 +160,26 @@ abstract class AbstractProcessor
             return [];
         }
 
+        $checksumField = $this->getOrderChecksumFieldName();
+
+        return [
+            $order[0] => $order[1],
+            $checksumField => 'asc',
+        ];
+    }
+
+    /**
+     * Gets the checksum field name base on options and added fields.
+     */
+    protected function getOrderChecksumFieldName(): string
+    {
         $checksumField = $this->getIdentifierFieldNames()[0];
         if (isset($this->options['continuation_token']['checksum_field'])) {
             $checksumField = $this->options['continuation_token']['checksum_field'];
             $checksumField = $this->fields[$checksumField]->fieldName;
         }
 
-        return [
-            $order[0] => $order[1],
-            $checksumField => 'asc',
-        ];
+        return $checksumField;
     }
 
     /**
