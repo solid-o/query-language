@@ -17,7 +17,6 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\RequestHandlerInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Range;
@@ -101,7 +100,7 @@ class QueryType extends AbstractType
                 'order_field' => null,
                 'default_order' => null,
                 'allow_extra_fields' => true,
-                'method' => Request::METHOD_GET,
+                'method' => 'GET',
                 'orderable_fields' => static fn (Options $options) => array_keys($options['fields']),
                 'order_validation_walker' => static fn (Options $options) => new OrderWalker($options['orderable_fields']),
             ])

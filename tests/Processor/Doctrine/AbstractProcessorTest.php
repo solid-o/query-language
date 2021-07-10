@@ -79,7 +79,7 @@ class ConcreteProcessor extends AbstractProcessor
     /**
      * {@inheritdoc}
      */
-    public function handleRequest(Request $request)
+    public function handleRequest(object $request)
     {
         return parent::handleRequest($request);
     }

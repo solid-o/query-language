@@ -16,7 +16,6 @@ use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Processor\OrderableFieldInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use function array_key_first;
@@ -47,7 +46,7 @@ class Processor extends AbstractProcessor
     /**
      * @return ObjectIteratorInterface|FormInterface
      */
-    public function processRequest(Request $request)
+    public function processRequest(object $request)
     {
         $result = $this->handleRequest($request);
         if ($result instanceof FormInterface) {

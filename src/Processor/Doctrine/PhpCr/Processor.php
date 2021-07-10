@@ -19,7 +19,6 @@ use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 use function array_key_first;
 use function assert;
@@ -79,7 +78,7 @@ class Processor extends AbstractProcessor
      *
      * @return ObjectIteratorInterface|FormInterface
      */
-    public function processRequest(Request $request)
+    public function processRequest(object $request)
     {
         $result = $this->handleRequest($request);
         if ($result instanceof FormInterface) {

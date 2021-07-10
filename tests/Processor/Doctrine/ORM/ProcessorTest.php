@@ -8,7 +8,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
 use Refugis\DoctrineExtra\ORM\EntityIterator;
-use Solido\Common\Form\AutoSubmitRequestHandler;
 use Solido\Pagination\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\OrderExpression;
@@ -19,7 +18,6 @@ use Solido\QueryLanguage\Tests\Doctrine\ORM\FixturesTrait;
 use Solido\QueryLanguage\Tests\Fixtures\Entity\FooBar;
 use Solido\QueryLanguage\Tests\Fixtures\Entity\User;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalker;
-use Symfony\Component\Form\Extension\HttpFoundation\Type\FormTypeHttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryBuilder;
 use Symfony\Component\Form\FormInterface;
@@ -331,5 +329,39 @@ class ProcessorTest extends TestCase
         $itr = $this->processor->processRequest($request);
 
         self::assertInstanceOf(PagerIterator::class, $itr);
+    }
+
+    public function testCouldBeOrderedByAssociationField(): void
+    {
+        $formFactory = (new FormFactoryBuilder(true))
+            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
+            ->getFormFactory();
+
+        $this->processor = new Processor(
+            self::$entityManager->getRepository(User::class)->createQueryBuilder('u'),
+            $formFactory,
+            [
+                'continuation_token' => true,
+            ],
+        );
+
+        $this->processor->addField('name');
+        $this->processor->addField('foo', [ 'field_name' => 'foobar.foobar' ]);
+
+        $request = new Request([]);
+        $request->headers->set('X-Order', 'foo; desc');
+        $itr = $this->processor->processRequest($request);
+
+        self::assertInstanceOf(PagerIterator::class, $itr);
+        $result = iterator_to_array($itr);
+
+        self::assertCount(7, $result);
+        self::assertInstanceOf(User::class, $result[0]);
+        self::assertEquals('goofy', $result[0]->name);
+
+        $request->headers->set('X-Order', 'foo; asc');
+        $itr = $this->processor->processRequest($request);
+        $result = iterator_to_array($itr);
+        self::assertEquals('bar', $result[0]->name);
     }
 }

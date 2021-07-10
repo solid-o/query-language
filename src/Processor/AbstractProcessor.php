@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Solido\QueryLanguage\Processor;
 
 use Iterator;
+use Solido\Common\AdapterFactory;
+use Solido\Common\AdapterFactoryInterface;
 use Solido\Pagination\PageToken;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Form\DTO\Query;
@@ -13,14 +15,12 @@ use Solido\QueryLanguage\Grammar\Grammar;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use function array_filter;
 use function array_keys;
-use function assert;
 use function Safe\preg_match;
 use function strpos;
 
@@ -32,6 +32,7 @@ abstract class AbstractProcessor
     /** @var mixed[] */
     protected array $options;
     private FormFactoryInterface $formFactory;
+    private AdapterFactoryInterface $adapterFactory;
 
     /**
      * @param mixed[] $options
@@ -41,6 +42,12 @@ abstract class AbstractProcessor
         $this->options = $this->resolveOptions($options);
         $this->fields = [];
         $this->formFactory = $formFactory;
+        $this->adapterFactory = new AdapterFactory();
+    }
+
+    public function setAdapterFactory(AdapterFactoryInterface $adapterFactory): void
+    {
+        $this->adapterFactory = $adapterFactory;
     }
 
     /**
@@ -65,12 +72,15 @@ abstract class AbstractProcessor
      *
      * @return Query|FormInterface
      */
-    protected function handleRequest(Request $request)
+    protected function handleRequest(object $request)
     {
         $defaultOrder = $this->options['default_order'];
-        if ($request->headers->has('X-Order')) {
+        $adapter = $this->adapterFactory->createRequestAdapter($request);
+
+        $orderHeader = $adapter->getHeader('X-Order')[0] ?? null;
+        if ($orderHeader) {
             // @phpstan-ignore-next-line
-            $defaultOrder = OrderExpression::fromHeader($request->headers->get('X-Order'));
+            $defaultOrder = OrderExpression::fromHeader($orderHeader);
         }
 
         $options = [
@@ -93,21 +103,18 @@ abstract class AbstractProcessor
             return $form;
         }
 
-        if ($this->options['range-header'] && $request->headers->has('Range')) {
-            $range = $request->headers->get('Range', '');
-            assert($range !== null);
-
-            if (preg_match('/^(units=(?P<start>\d+)-(?P<end>\d+)|after=(?P<token>[^\s,.]+))$/', $range, $matches)) {
-                if (
-                    $dto->skip === null && $dto->limit === null &&
-                    isset($matches['start'], $matches['end']) &&
-                    $matches['start'] !== '' && $matches['end'] !== ''
-                ) {
-                    $dto->skip = (int) $matches['start'];
-                    $dto->limit = ((int) $matches['end']) - ((int) $matches['start']) + 1;
-                } elseif ($dto->pageToken === null && isset($matches['token']) && PageToken::isValid($matches['token'])) {
-                    $dto->pageToken = PageToken::parse($matches['token']);
-                }
+        $range = $adapter->getHeader('Range')[0] ?? null;
+        if ($this->options['range-header'] && ! empty($range) &&
+            preg_match('/^(units=(?P<start>\d+)-(?P<end>\d+)|after=(?P<token>[^\s,.]+))$/', $range, $matches)) {
+            if (
+                $dto->skip === null && $dto->limit === null &&
+                isset($matches['start'], $matches['end']) &&
+                $matches['start'] !== '' && $matches['end'] !== ''
+            ) {
+                $dto->skip = (int) $matches['start'];
+                $dto->limit = ((int) $matches['end']) - ((int) $matches['start']) + 1;
+            } elseif ($dto->pageToken === null && isset($matches['token']) && PageToken::isValid($matches['token'])) {
+                $dto->pageToken = PageToken::parse($matches['token']);
             }
         }
 
