@@ -123,11 +123,6 @@ abstract class AbstractProcessor
     }
 
     /**
-     * Creates a Field instance.
-     */
-    abstract protected function createField(string $fieldName): FieldInterface;
-
-    /**
      * Gets the identifier field names.
      *
      * @return string[]

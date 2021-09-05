@@ -43,7 +43,6 @@ class Processor extends AbstractProcessor
 
         $this->queryBuilder = $queryBuilder;
         $this->documentManager = $documentManager;
-        $this->fields = [];
 
         $fromNode = $this->queryBuilder->getChildOfType(AbstractNode::NT_FROM);
         assert($fromNode instanceof From);
