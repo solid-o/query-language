@@ -7,6 +7,8 @@ namespace Solido\QueryLanguage\Processor\Doctrine\DBAL;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Refugis\DoctrineExtra\DBAL\RowIterator;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
+use Solido\DataMapper\DataMapperFactory;
+use Solido\DataMapper\Exception\MappingErrorException;
 use Solido\Pagination\Doctrine\DBAL\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\OrderExpression;
@@ -14,8 +16,6 @@ use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Processor\OrderableFieldInterface;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use function array_key_first;
@@ -35,24 +35,20 @@ class Processor extends AbstractProcessor
     /**
      * @param mixed[] $options
      */
-    public function __construct(QueryBuilder $queryBuilder, FormFactoryInterface $formFactory, array $options = [])
+    public function __construct(QueryBuilder $queryBuilder, DataMapperFactory $dataMapperFactory, array $options = [])
     {
-        parent::__construct($formFactory, $options);
+        parent::__construct($dataMapperFactory, $options);
 
         $this->identifierFields = array_values($this->options['identifiers']);
         $this->queryBuilder = $queryBuilder;
     }
 
     /**
-     * @return ObjectIteratorInterface|FormInterface
+     * @throws MappingErrorException
      */
-    public function processRequest(object $request)
+    public function processRequest(object $request): ObjectIteratorInterface
     {
         $result = $this->handleRequest($request);
-        if ($result instanceof FormInterface) {
-            return $result;
-        }
-
         $this->attachToQueryBuilder($result->filters);
         if ($result->skip !== null) {
             $this->queryBuilder->setFirstResult($result->skip);

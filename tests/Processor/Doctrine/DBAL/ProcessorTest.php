@@ -8,6 +8,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Refugis\DoctrineExtra\DBAL\RowIterator;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
+use Solido\DataMapper\DataMapperFactory;
+use Solido\DataMapper\Exception\MappingErrorException;
 use Solido\Pagination\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Processor\FieldInterface;
@@ -35,6 +37,9 @@ class ProcessorTest extends TestCase
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
             ->getFormFactory();
 
+        $this->dataMapperFactory = new DataMapperFactory();
+        $this->dataMapperFactory->setFormFactory($formFactory);
+
         $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
         $queryBuilder
             ->select('id', 'name', 'nameLength')
@@ -42,7 +47,7 @@ class ProcessorTest extends TestCase
 
         $this->processor = new Processor(
             $queryBuilder,
-            $formFactory,
+            $this->dataMapperFactory,
             [
                 'order_field' => 'order',
                 'continuation_token' => true,
@@ -106,10 +111,6 @@ class ProcessorTest extends TestCase
     {
         $this->expectException(InvalidOptionsException::class);
 
-        $formFactory = (new FormFactoryBuilder(true))
-            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->getFormFactory();
-
         $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
         $queryBuilder
             ->select('id', 'name', 'nameLength')
@@ -117,7 +118,7 @@ class ProcessorTest extends TestCase
 
         $this->processor = new Processor(
             $queryBuilder,
-            $formFactory,
+            $this->dataMapperFactory,
             [
                 'default_order' => '$eq(name)',
                 'order_field' => 'order',
@@ -144,10 +145,6 @@ class ProcessorTest extends TestCase
      */
     public function testOrderByDefaultFieldShouldWork(bool $valid, string $defaultOrder): void
     {
-        $formFactory = (new FormFactoryBuilder(true))
-            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->getFormFactory();
-
         $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
         $queryBuilder
             ->select('id', 'name', 'nameLength')
@@ -155,7 +152,7 @@ class ProcessorTest extends TestCase
 
         $this->processor = new Processor(
             $queryBuilder,
-            $formFactory,
+            $this->dataMapperFactory,
             [
                 'default_order' => $defaultOrder,
                 'order_field' => 'order',
@@ -164,23 +161,18 @@ class ProcessorTest extends TestCase
             ],
         );
 
+        if (! $valid) {
+            $this->expectException(MappingErrorException::class);
+        }
+
         $this->processor->addField('name');
         $this->processor->setDefaultPageSize(3);
         $itr = $this->processor->processRequest(new Request([]));
-
-        if (! $valid) {
-            self::assertInstanceOf(FormInterface::class, $itr);
-        } else {
-            self::assertInstanceOf(PagerIterator::class, $itr);
-        }
+        self::assertInstanceOf(PagerIterator::class, $itr);
     }
 
     public function testContinuationTokenCouldBeDisabled(): void
     {
-        $formFactory = (new FormFactoryBuilder(true))
-            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->getFormFactory();
-
         $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
         $queryBuilder
             ->select('id', 'name', 'nameLength')
@@ -188,7 +180,7 @@ class ProcessorTest extends TestCase
 
         $this->processor = new Processor(
             $queryBuilder,
-            $formFactory,
+            $this->dataMapperFactory,
             [
                 'default_order' => 'name, desc',
                 'order_field' => 'order',
@@ -240,10 +232,6 @@ class ProcessorTest extends TestCase
 
     public function testXOrderInRequestShouldWork(): void
     {
-        $formFactory = (new FormFactoryBuilder(true))
-            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->getFormFactory();
-
         $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
         $queryBuilder
             ->select('id', 'name', 'nameLength')
@@ -251,7 +239,7 @@ class ProcessorTest extends TestCase
 
         $this->processor = new Processor(
             $queryBuilder,
-            $formFactory,
+            $this->dataMapperFactory,
             [
                 'continuation_token' => true,
                 'identifiers' => ['id'],

@@ -1,6 +1,6 @@
 includes:
     - vendor/solido/php-coding-standards/phpstan.neon
 parameters:
-    excludes_analyse:
+    excludePaths:
         - src/Grammar/AbstractGrammar.php
         - src/Grammar/template.parser.php

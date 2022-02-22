@@ -12,13 +12,13 @@ use Doctrine\ODM\PHPCR\Query\Builder\QueryBuilder;
 use Doctrine\ODM\PHPCR\Query\Builder\SourceDocument;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
 use Refugis\DoctrineExtra\ODM\PhpCr\DocumentIterator;
+use Solido\DataMapper\DataMapperFactory;
+use Solido\DataMapper\Exception\MappingErrorException;
 use Solido\Pagination\Doctrine\PhpCr\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Form\FormInterface;
 
 use function array_key_first;
 use function assert;
@@ -31,15 +31,15 @@ class Processor extends AbstractProcessor
     private string $rootAlias;
 
     /**
-     * @param mixed[] $options
+     * @param array<string, mixed> $options
      */
     public function __construct(
         QueryBuilder $queryBuilder,
         DocumentManagerInterface $documentManager,
-        FormFactoryInterface $formFactory,
+        DataMapperFactory $dataMapperFactory,
         array $options = []
     ) {
-        parent::__construct($formFactory, $options);
+        parent::__construct($dataMapperFactory, $options);
 
         $this->queryBuilder = $queryBuilder;
         $this->documentManager = $documentManager;
@@ -75,15 +75,11 @@ class Processor extends AbstractProcessor
      * Processes and validates the request, adds the filters to the query builder and
      * returns the iterator with the results.
      *
-     * @return ObjectIteratorInterface|FormInterface
+     * @throws MappingErrorException
      */
-    public function processRequest(object $request)
+    public function processRequest(object $request): ObjectIteratorInterface
     {
         $result = $this->handleRequest($request);
-        if ($result instanceof FormInterface) {
-            return $result;
-        }
-
         $this->attachToQueryBuilder($result->filters);
         if ($result->skip !== null) {
             $this->queryBuilder->setFirstResult($result->skip);

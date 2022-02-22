@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Form;
 
-use Solido\Common\Form\AutoSubmitRequestHandler;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Processor\FieldInterface;
@@ -16,7 +15,6 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Form\RequestHandlerInterface;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Range;
@@ -31,8 +29,6 @@ class QueryType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->setRequestHandler(self::getHandler());
-
         if ($options['order_field'] !== null) {
             $builder->add($options['order_field'], FieldType::class, [
                 'data_class' => null,
@@ -111,15 +107,5 @@ class QueryType extends AbstractType
             ->setAllowedTypes('default_order', ['null', OrderExpression::class])
             ->setAllowedTypes('order_validation_walker', ['null', ValidationWalkerInterface::class])
             ->setRequired('fields');
-    }
-
-    private static function getHandler(): RequestHandlerInterface
-    {
-        static $handler = null;
-        if ($handler === null) {
-            $handler = new AutoSubmitRequestHandler();
-        }
-
-        return $handler;
     }
 }

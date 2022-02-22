@@ -8,6 +8,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
 use Refugis\DoctrineExtra\ORM\EntityIterator;
+use Solido\DataMapper\DataMapperFactory;
+use Solido\DataMapper\Exception\MappingErrorException;
 use Solido\Pagination\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\OrderExpression;
@@ -20,7 +22,6 @@ use Solido\QueryLanguage\Tests\Fixtures\Entity\User;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalker;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryBuilder;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Validator\ValidatorBuilder;
@@ -30,6 +31,7 @@ class ProcessorTest extends TestCase
 {
     use FixturesTrait;
 
+    private DataMapperFactory $dataMapperFactory;
     private Processor $processor;
 
     protected function setUp(): void
@@ -38,9 +40,12 @@ class ProcessorTest extends TestCase
             ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
             ->getFormFactory();
 
+        $this->dataMapperFactory = new DataMapperFactory();
+        $this->dataMapperFactory->setFormFactory($formFactory);
+
         $this->processor = new Processor(
             self::$entityManager->getRepository(User::class)->createQueryBuilder('u'),
-            $formFactory,
+            $this->dataMapperFactory,
             [
                 'order_field' => 'order',
                 'continuation_token' => true,
@@ -112,14 +117,9 @@ class ProcessorTest extends TestCase
     public function testOrderByDefaultFieldShouldThrowOnInvalidOptions(): void
     {
         $this->expectException(InvalidOptionsException::class);
-
-        $formFactory = (new FormFactoryBuilder(true))
-            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->getFormFactory();
-
         $this->processor = new Processor(
             self::$entityManager->getRepository(User::class)->createQueryBuilder('u'),
-            $formFactory,
+            $this->dataMapperFactory,
             [
                 'default_order' => '$eq(name)',
                 'order_field' => 'order',
@@ -145,13 +145,9 @@ class ProcessorTest extends TestCase
      */
     public function testOrderByDefaultFieldShouldWork(bool $valid, string $defaultOrder): void
     {
-        $formFactory = (new FormFactoryBuilder(true))
-            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->getFormFactory();
-
         $this->processor = new Processor(
             self::$entityManager->getRepository(User::class)->createQueryBuilder('u'),
-            $formFactory,
+            $this->dataMapperFactory,
             [
                 'default_order' => $defaultOrder,
                 'order_field' => 'order',
@@ -159,15 +155,15 @@ class ProcessorTest extends TestCase
             ],
         );
 
+        if (! $valid) {
+            $this->expectException(MappingErrorException::class);
+        }
+
         $this->processor->addField('name');
         $this->processor->setDefaultPageSize(3);
         $itr = $this->processor->processRequest(new Request([]));
 
-        if (! $valid) {
-            self::assertInstanceOf(FormInterface::class, $itr);
-        } else {
-            self::assertInstanceOf(PagerIterator::class, $itr);
-        }
+        self::assertInstanceOf(PagerIterator::class, $itr);
     }
 
     public function provideRangeHeaders(): iterable
@@ -184,13 +180,9 @@ class ProcessorTest extends TestCase
      */
     public function testRangeHeader(string $rangeHeader, int $count): void
     {
-        $formFactory = (new FormFactoryBuilder(true))
-            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->getFormFactory();
-
         $this->processor = new Processor(
             self::$entityManager->getRepository(User::class)->createQueryBuilder('u'),
-            $formFactory,
+            $this->dataMapperFactory,
             [ 'continuation_token' => true ],
         );
 
@@ -208,13 +200,9 @@ class ProcessorTest extends TestCase
 
     public function testContinuationTokenCouldBeDisabled(): void
     {
-        $formFactory = (new FormFactoryBuilder(true))
-            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->getFormFactory();
-
         $this->processor = new Processor(
             self::$entityManager->getRepository(User::class)->createQueryBuilder('u'),
-            $formFactory,
+            $this->dataMapperFactory,
             [
                 'default_order' => 'name, desc',
                 'order_field' => 'order',
@@ -286,7 +274,7 @@ class ProcessorTest extends TestCase
 
             public function getOrder(object $queryBuilder, OrderExpression $orderExpression): array
             {
-                return [];
+                return ['foobar', 'asc'];
             }
 
             public function getValidationWalker()
@@ -308,13 +296,9 @@ class ProcessorTest extends TestCase
 
     public function testXOrderInRequestShouldWork(): void
     {
-        $formFactory = (new FormFactoryBuilder(true))
-            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->getFormFactory();
-
         $this->processor = new Processor(
             self::$entityManager->getRepository(User::class)->createQueryBuilder('u'),
-            $formFactory,
+            $this->dataMapperFactory,
             [
                 'order_field' => 'order',
                 'continuation_token' => true,
@@ -333,13 +317,9 @@ class ProcessorTest extends TestCase
 
     public function testCouldBeOrderedByAssociationField(): void
     {
-        $formFactory = (new FormFactoryBuilder(true))
-            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->getFormFactory();
-
         $this->processor = new Processor(
             self::$entityManager->getRepository(User::class)->createQueryBuilder('u'),
-            $formFactory,
+            $this->dataMapperFactory,
             [
                 'continuation_token' => true,
             ],

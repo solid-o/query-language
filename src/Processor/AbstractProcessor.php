@@ -7,14 +7,14 @@ namespace Solido\QueryLanguage\Processor;
 use Iterator;
 use Solido\Common\AdapterFactory;
 use Solido\Common\AdapterFactoryInterface;
+use Solido\DataMapper\DataMapperFactory;
+use Solido\DataMapper\Exception\MappingErrorException;
 use Solido\Pagination\PageToken;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Form\QueryType;
 use Solido\QueryLanguage\Grammar\Grammar;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -31,17 +31,17 @@ abstract class AbstractProcessor
 
     /** @var mixed[] */
     protected array $options;
-    private FormFactoryInterface $formFactory;
+    private DataMapperFactory $dataMapperFactory;
     private AdapterFactoryInterface $adapterFactory;
 
     /**
      * @param mixed[] $options
      */
-    public function __construct(FormFactoryInterface $formFactory, array $options = [])
+    public function __construct(DataMapperFactory $dataMapperFactory, array $options = [])
     {
         $this->options = $this->resolveOptions($options);
         $this->fields = [];
-        $this->formFactory = $formFactory;
+        $this->dataMapperFactory = $dataMapperFactory;
         $this->adapterFactory = new AdapterFactory();
     }
 
@@ -70,9 +70,9 @@ abstract class AbstractProcessor
     /**
      * Binds and validates the request to the internal Query object.
      *
-     * @return Query|FormInterface
+     * @throws MappingErrorException
      */
-    protected function handleRequest(object $request)
+    protected function handleRequest(object $request): Query
     {
         $defaultOrder = $this->options['default_order'];
         $adapter = $this->adapterFactory->createRequestAdapter($request);
@@ -96,11 +96,8 @@ abstract class AbstractProcessor
             $options['order_validation_walker'] = $this->options['order_validation_walker'];
         }
 
-        $form = $this->formFactory->createNamed('', QueryType::class, $dto = new Query(), $options);
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && ! $form->isValid()) {
-            return $form;
-        }
+        $mapper = $this->dataMapperFactory->createFormBuilderMapper(QueryType::class, $dto = new Query(), $options);
+        $mapper->map($request);
 
         $range = $adapter->getHeader('Range')[0] ?? null;
         if (
@@ -151,7 +148,7 @@ abstract class AbstractProcessor
         }
 
         $order = $field->getOrder($queryBuilder, $ordering);
-        if (empty($order)) {
+        if (empty($order)) { /* @phpstan-ignore-line */
             return [];
         }
 

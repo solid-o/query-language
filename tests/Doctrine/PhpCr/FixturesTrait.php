@@ -7,7 +7,7 @@ namespace Solido\QueryLanguage\Tests\Doctrine\PhpCr;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\PDOSqlite\Driver;
+use Doctrine\DBAL\Driver\PDO\SQLite\Driver;
 use Doctrine\ODM\PHPCR\Configuration;
 use Doctrine\ODM\PHPCR\DocumentManager;
 use Doctrine\ODM\PHPCR\DocumentManagerInterface;
@@ -19,6 +19,7 @@ use Jackalope\Transport\DoctrineDBAL\Client;
 use Jackalope\Transport\DoctrineDBAL\RepositorySchema;
 use PHPCR\SimpleCredentials;
 use Solido\QueryLanguage\Tests\Fixtures\Document as QueryLanguageFixtures;
+
 use function sys_get_temp_dir;
 use function uniqid;
 

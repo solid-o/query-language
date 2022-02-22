@@ -9,14 +9,14 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\QueryBuilder;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
 use Refugis\DoctrineExtra\ORM\EntityIterator;
+use Solido\DataMapper\DataMapperFactory;
+use Solido\DataMapper\Exception\MappingErrorException;
 use Solido\Pagination\Doctrine\ORM\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Form\FormInterface;
 
 use function array_key_first;
 use function assert;
@@ -29,12 +29,12 @@ class Processor extends AbstractProcessor
     private ClassMetadata $rootEntity;
 
     /**
-     * @param mixed[] $options
-     * @phpstan-param array{order_field?:?string, skip_field?:?string, limit_field?:?string, default_order?:?string, default_page_size?:?int, order_validation_walker?:?ValidationWalkerInterface, continuation_token?:bool|array{field:string, checksum_field:string}} $options
+     * @param array<string, mixed> $options
+     * @phpstan-param array{order_field?: string, skip_field?: string, limit_field?: string, default_order?: string, default_page_size?: int, order_validation_walker?: ValidationWalkerInterface, continuation_token?: bool|array{field:string, checksum_field:string}} $options
      */
-    public function __construct(QueryBuilder $queryBuilder, FormFactoryInterface $formFactory, array $options = [])
+    public function __construct(QueryBuilder $queryBuilder, DataMapperFactory $dataMapperFactory, array $options = [])
     {
-        parent::__construct($formFactory, $options);
+        parent::__construct($dataMapperFactory, $options);
 
         $this->queryBuilder = $queryBuilder;
         $this->entityManager = $this->queryBuilder->getEntityManager();
@@ -57,15 +57,11 @@ class Processor extends AbstractProcessor
     }
 
     /**
-     * @return ObjectIteratorInterface|FormInterface
+     * @throws MappingErrorException
      */
-    public function processRequest(object $request)
+    public function processRequest(object $request): ObjectIteratorInterface
     {
         $result = $this->handleRequest($request);
-        if ($result instanceof FormInterface) {
-            return $result;
-        }
-
         $this->attachToQueryBuilder($result->filters);
         if ($result->skip !== null) {
             $this->queryBuilder->setFirstResult($result->skip);

@@ -125,7 +125,7 @@ class Field implements FieldInterface
         $currentFieldName = $alias;
         $currentAlias = $alias;
         foreach ($this->associations as $association) {
-            if (isset($association['targetEntity'])) {
+            if (isset($association['targetEntity'])) { /* @phpstan-ignore-line */
                 $subQb->join($currentFieldName . '.' . $association['fieldName'], 'sub_' . $association['fieldName']);
                 $currentAlias = $currentFieldName = 'sub_' . $association['fieldName'];
             } else {

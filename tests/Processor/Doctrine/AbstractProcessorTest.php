@@ -9,6 +9,8 @@ use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
+use Solido\DataMapper\DataMapperFactory;
+use Solido\DataMapper\DataMapperInterface;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Form\QueryType;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
@@ -23,32 +25,22 @@ class AbstractProcessorTest extends TestCase
 {
     use ProphecyTrait;
 
-    /** @var ObjectProphecy|FormFactoryInterface */
-    private ObjectProphecy $formFactory;
-
-    protected function setUp(): void
-    {
-        $this->formFactory = $this->prophesize(FormFactoryInterface::class);
-    }
-
     public function testCustomOrderValidationWalker(): void
     {
-        $processor = new ConcreteProcessor($this->formFactory->reveal(), [
+        $dataMapperFactory = $this->prophesize(DataMapperFactory::class);
+        $processor = new ConcreteProcessor($dataMapperFactory->reveal(), [
             'order_field' => 'order',
             'order_validation_walker' => $orderWalker = new OrderWalker(['test', 'foo']),
         ]);
 
-        $this->formFactory->createNamed('', QueryType::class, Argument::type(Query::class), Argument::withEntry(
+        $dataMapperFactory->createFormBuilderMapper(QueryType::class, Argument::type(Query::class), Argument::withEntry(
             'order_validation_walker',
             $orderWalker
         ))
             ->shouldBeCalled()
-            ->willReturn($form = $this->prophesize(FormInterface::class));
+            ->willReturn($dataMapper = $this->prophesize(DataMapperInterface::class));
 
-        $form->handleRequest(Argument::any())->willReturn();
-        $form->isSubmitted()->willReturn(true);
-        $form->isValid()->willReturn(true);
-
+        $dataMapper->map(Argument::any())->shouldBeCalled();
         $processor->handleRequest(new Request(['order' => '$order(test, asc)']));
     }
 }
@@ -79,7 +71,7 @@ class ConcreteProcessor extends AbstractProcessor
     /**
      * {@inheritdoc}
      */
-    public function handleRequest(object $request)
+    public function handleRequest(object $request): Query
     {
         return parent::handleRequest($request);
     }
