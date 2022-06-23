@@ -9,7 +9,9 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Solido\QueryLanguage\Exception\Doctrine\FieldNotFoundException;
+use Solido\QueryLanguage\Expression\Comparison\EqualExpression;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
+use Solido\QueryLanguage\Expression\Literal\NullExpression;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\Doctrine\DiscriminatorWalker;
@@ -84,7 +86,7 @@ class Field implements FieldInterface
      */
     public function addCondition(object $queryBuilder, ExpressionInterface $expression): void
     {
-        if (! $this->isAssociation()) {
+        if (! $this->isAssociation() || ($expression instanceof EqualExpression && $expression->getValue() instanceof NullExpression)) {
             $this->addWhereCondition($queryBuilder, $expression);
         } else {
             $this->addAssociationCondition($queryBuilder, $expression);
