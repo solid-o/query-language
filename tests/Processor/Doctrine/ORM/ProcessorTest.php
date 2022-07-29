@@ -79,6 +79,26 @@ class ProcessorTest extends TestCase
         self::assertEquals('donald duck', $result[0]->name);
     }
 
+    public function testRelationSimpleFieldWorks(): void
+    {
+        $this->processor->addField('foobar');
+        $itr = $this->processor->processRequest(new Request(['foobar' => '12']));
+
+        self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
+        iterator_to_array($itr);
+
+        self::assertSame('SELECT u0_.id AS id_0, u0_.name AS name_1, u0_.nameLength AS nameLength_2, u0_.foobar_id AS foobar_id_3 FROM User u0_ WHERE 1 = 1 AND u0_.foobar_id = ?', self::$queryLogs[0]['sql']);
+        self::assertSame(12, self::$queryLogs[0]['params'][1]);
+
+        $this->setUp();
+        $this->processor->addField('foobar');
+        $itr = $this->processor->processRequest(new Request(['foobar' => 'null']));
+
+        self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
+        iterator_to_array($itr);
+        self::assertSame('SELECT u0_.id AS id_0, u0_.name AS name_1, u0_.nameLength AS nameLength_2, u0_.foobar_id AS foobar_id_3 FROM User u0_ WHERE 1 = 1 AND u0_.foobar_id IS NULL', self::$queryLogs[1]['sql']);
+    }
+
     public function testFieldWithFieldInRelatedEntityWorks(): void
     {
         $this->processor->addField('foobar', ['field_name' => 'foobar.foobar']);
