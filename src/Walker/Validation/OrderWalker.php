@@ -21,6 +21,7 @@ class OrderWalker extends ValidationWalker
      */
     public function __construct(array $orderableFields)
     {
+        parent::__construct();
         $this->orderableFields = $orderableFields;
     }
 

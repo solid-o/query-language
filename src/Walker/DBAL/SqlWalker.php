@@ -27,14 +27,14 @@ class SqlWalker extends AbstractWalker
     private AbstractPlatform $platform;
     protected QueryBuilder $queryBuilder;
     private ?string $fieldType;
-    private string $fieldName;
+    private string $field;
+    private string $quotedField;
 
     public function __construct(QueryBuilder $queryBuilder, string $field, ?string $fieldType = null)
     {
         $this->platform = $queryBuilder->getConnection()->getDatabasePlatform();
-        parent::__construct($this->platform->quoteIdentifier($field));
-
-        $this->fieldName = $field;
+        $this->field = $field;
+        $this->quotedField = $this->platform->quoteIdentifier($field);
         $this->queryBuilder = $queryBuilder;
         $this->fieldType = $fieldType;
     }
@@ -44,7 +44,7 @@ class SqlWalker extends AbstractWalker
      */
     public function walkLiteral(LiteralExpression $expression)
     {
-        $value = parent::walkLiteral($expression);
+        $value = $expression->getValue();
         if ($expression instanceof NullExpression) {
             return $value;
         }
@@ -68,13 +68,13 @@ class SqlWalker extends AbstractWalker
      */
     public function walkComparison(string $operator, ValueExpression $expression)
     {
-        $field = $this->field;
+        $field = $this->quotedField;
         if ($expression instanceof NullExpression) {
             return $field . ' IS NULL';
         }
 
         if ($operator === 'like') {
-            $field = $this->platform->getLowerExpression($this->field);
+            $field = 'LOWER(' . $field . ')';
             $expression = StringExpression::create('%' . mb_strtolower((string) $expression) . '%');
         }
 
@@ -135,7 +135,7 @@ class SqlWalker extends AbstractWalker
      */
     public function walkEntry(string $key, ExpressionInterface $expression)
     {
-        $walker = new SqlWalker($this->queryBuilder, $this->fieldName . '.' . $key);
+        $walker = new SqlWalker($this->queryBuilder, $this->field . '.' . $key);
 
         return $expression->dispatch($walker);
     }
@@ -147,7 +147,7 @@ class SqlWalker extends AbstractWalker
     {
         $params = $this->queryBuilder->getParameters();
         $underscoreField = mb_strtolower(
-            preg_replace('/(?|(?<=[a-z0-9])([A-Z])|(?<=[A-Z]{2})([a-z]))/', '_$1', $this->fieldName)
+            preg_replace('/(?|(?<=[a-z0-9])([A-Z])|(?<=[A-Z]{2})([a-z]))/', '_$1', $this->field)
         );
         $parameterName = $origParamName = preg_replace('/\W+/', '_', $underscoreField);
 

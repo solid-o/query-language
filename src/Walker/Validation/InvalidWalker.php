@@ -9,7 +9,7 @@ use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use Solido\QueryLanguage\Expression\ValueExpression;
 
 /**
- * This walker always adds a violation, whatever expresion is passed to it.
+ * This walker always adds a violation, whatever expression is passed to it.
  * If extended is useful to build a walker that allows a very specific operation.
  */
 class InvalidWalker extends ValidationWalker

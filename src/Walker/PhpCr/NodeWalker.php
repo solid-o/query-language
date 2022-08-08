@@ -39,12 +39,12 @@ class NodeWalker extends AbstractWalker
         'like' => QOMConstants::JCR_OPERATOR_LIKE,
     ];
 
+    private string $field;
     private ?string $fieldType;
 
     public function __construct(string $field, ?string $fieldType = null)
     {
-        parent::__construct($field);
-
+        $this->field = $field;
         $this->fieldType = $fieldType;
     }
 
@@ -53,7 +53,7 @@ class NodeWalker extends AbstractWalker
      */
     public function walkLiteral(LiteralExpression $expression)
     {
-        $value = parent::walkLiteral($expression);
+        $value = $expression->getValue();
         if ($expression instanceof NullExpression) {
             return $value;
         }

@@ -28,6 +28,7 @@ class EnumWalker extends ValidationWalker
      */
     public function __construct($values)
     {
+        parent::__construct();
         if (is_string($values) && class_exists($values) && is_subclass_of($values, Enum::class, true)) {
             $values = $values::toArray();
         }

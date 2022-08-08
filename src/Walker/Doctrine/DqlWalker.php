@@ -33,12 +33,12 @@ class DqlWalker extends AbstractWalker
     ];
 
     protected QueryBuilder $queryBuilder;
+    protected string $field;
     private ?string $fieldType;
 
     public function __construct(QueryBuilder $queryBuilder, string $field, ?string $fieldType = null)
     {
-        parent::__construct($field);
-
+        $this->field = $field;
         $this->queryBuilder = $queryBuilder;
         $this->fieldType = $fieldType;
     }
@@ -48,7 +48,7 @@ class DqlWalker extends AbstractWalker
      */
     public function walkLiteral(LiteralExpression $expression)
     {
-        $value = parent::walkLiteral($expression);
+        $value = $expression->getValue();
         if ($expression instanceof NullExpression) {
             return $value;
         }
