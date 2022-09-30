@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Solido\QueryLanguage\Exception\SyntaxError;
 use Solido\QueryLanguage\Expression;
 use Solido\QueryLanguage\Grammar\Grammar;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\VarDumper\Test\VarDumperTestTrait;
 
 class GrammarTest extends TestCase
@@ -24,12 +25,22 @@ class GrammarTest extends TestCase
     /**
      * @dataProvider provideExpressions
      */
-    public function testParse(string $query, Expression\ExpressionInterface $expected)
+    public function testParse(string $query, Expression\ExpressionInterface $expected): void
     {
         $this->assertDumpEquals($this->getDump($expected), $this->grammar->parse($query));
     }
 
-    public function provideExpressions()
+    /**
+     * @dataProvider provideExpressions
+     */
+    public function testParseWithCache(string $query, Expression\ExpressionInterface $expected): void
+    {
+        $this->grammar = new Grammar(new ArrayAdapter(3600));
+        $this->assertDumpEquals($this->getDump($expected), $this->grammar->parse($query));
+        $this->assertDumpEquals($this->getDump($expected), $this->grammar->parse($query));
+    }
+
+    public function provideExpressions(): iterable
     {
         yield ['$all', new Expression\AllExpression()];
         yield [
@@ -143,13 +154,13 @@ class GrammarTest extends TestCase
     /**
      * @dataProvider provideInvalidExpressions
      */
-    public function testParseShouldThrowOnInvalidSyntax(string $query)
+    public function testParseShouldThrowOnInvalidSyntax(string $query): void
     {
         $this->expectException(SyntaxError::class);
         $this->grammar->parse($query);
     }
 
-    public function provideInvalidExpressions()
+    public function provideInvalidExpressions(): iterable
     {
         yield ['$eq'];
         yield ['$neq'];

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Grammar;
 
+use Psr\Cache\CacheItemPoolInterface;
 use Solido\QueryLanguage\Exception\InvalidArgumentException;
 use Solido\QueryLanguage\Expression\AllExpression;
 use Solido\QueryLanguage\Expression\Comparison;
@@ -18,6 +19,13 @@ use function get_class;
 final class Grammar extends AbstractGrammar
 {
     private static ?self $instance = null;
+    private ?CacheItemPoolInterface $cache;
+
+    public function __construct(?CacheItemPoolInterface $cache = null)
+    {
+        parent::__construct();
+        $this->cache = $cache;
+    }
 
     /**
      * Gets the Grammar class singleton.
@@ -38,7 +46,17 @@ final class Grammar extends AbstractGrammar
      */
     public function parse(string $input, $accept = ExpressionInterface::class): ExpressionInterface
     {
-        $expr = parent::parse($input);
+        $item = $this->cache !== null ? $this->cache->getItem(md5($input)) : null;
+        if (isset($item) && $item->isHit()) {
+            $expr = $item->get();
+        } else {
+            $expr = parent::parse($input);
+            if (isset($item)) {
+                $item->set($expr);
+                assert($this->cache !== null);
+                $this->cache->saveDeferred($item);
+            }
+        }
 
         foreach ((array) $accept as $acceptedClass) {
             if ($expr instanceof $acceptedClass) {
