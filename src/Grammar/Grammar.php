@@ -14,7 +14,9 @@ use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use Solido\QueryLanguage\Expression\Logical;
 use Solido\QueryLanguage\Expression\OrderExpression;
 
+use function assert;
 use function get_class;
+use function md5;
 
 final class Grammar extends AbstractGrammar
 {
