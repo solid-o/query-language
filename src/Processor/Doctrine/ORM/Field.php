@@ -85,7 +85,7 @@ class Field implements FieldInterface
     public function addCondition(object $queryBuilder, ExpressionInterface $expression): void
     {
         $assoc = $this->isAssociation();
-        if ($this->isAssociation() && count($this->associations) === 0) {
+        if ($assoc && ! $this->isManyToMany() && count($this->associations) === 0) {
             $analyzer = new AnalyzerWalker();
             $expression->dispatch($analyzer);
             $assoc = ! $analyzer->isSimple();

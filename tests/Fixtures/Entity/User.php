@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Tests\Fixtures\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use function strlen;
 
@@ -25,6 +27,9 @@ class User
     /** @ORM\ManyToOne(targetEntity=FooBar::class, cascade={"persist", "remove"}) */
     public FooBar $foobar;
 
+    /** @ORM\ManyToMany(targetEntity=Group::class, inversedBy="users") */
+    public Collection $groups;
+
     /** @ORM\Column(type="integer") */
     public int $nameLength;
 
@@ -35,5 +40,6 @@ class User
 
         $this->foobar = new FooBar();
         $this->foobar->foobar .= '_' . $name;
+        $this->groups = new ArrayCollection();
     }
 }

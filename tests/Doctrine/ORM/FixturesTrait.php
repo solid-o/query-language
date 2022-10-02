@@ -57,13 +57,19 @@ trait FixturesTrait
         $schemaTool = new SchemaTool(self::$entityManager);
         $schemaTool->updateSchema(self::$entityManager->getMetadataFactory()->getAllMetadata(), true);
 
-        self::$entityManager->persist(new QueryLanguageFixtures\User('foo'));
-        self::$entityManager->persist(new QueryLanguageFixtures\User('bar'));
-        self::$entityManager->persist(new QueryLanguageFixtures\User('foobar'));
+        self::$entityManager->persist($foo = new QueryLanguageFixtures\User('foo'));
+        self::$entityManager->persist($bar = new QueryLanguageFixtures\User('bar'));
+        self::$entityManager->persist($foobar = new QueryLanguageFixtures\User('foobar'));
         self::$entityManager->persist(new QueryLanguageFixtures\User('barbar'));
         self::$entityManager->persist(new QueryLanguageFixtures\User('baz'));
         self::$entityManager->persist(new QueryLanguageFixtures\User('donald duck'));
-        self::$entityManager->persist(new QueryLanguageFixtures\User('goofy'));
+        self::$entityManager->persist($goofy = new QueryLanguageFixtures\User('goofy'));
+
+        self::$entityManager->persist($group1 = new QueryLanguageFixtures\Group(1, 'group1'));
+        $foo->groups[] = $group1;
+        $bar->groups[] = $group1;
+        $foobar->groups[] = $group1;
+        $goofy->groups[] = $group1;
 
         self::$entityManager->flush();
         self::$entityManager->clear();
