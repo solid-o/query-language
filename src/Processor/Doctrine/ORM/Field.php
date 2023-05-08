@@ -83,7 +83,7 @@ class Field implements FieldInterface
     public function addCondition(object $queryBuilder, ExpressionInterface $expression): void
     {
         $assoc = $this->isAssociation();
-        if ($assoc && ! $this->isManyToMany() && count($this->associations) === 0) {
+        if ($assoc && ! $this->isToMany() && count($this->associations) === 0) {
             $analyzer = new AnalyzerWalker();
             $expression->dispatch($analyzer);
             $assoc = ! $analyzer->isSimple();
@@ -146,7 +146,7 @@ class Field implements FieldInterface
 
         $subQb->where($expression->dispatch($walker));
 
-        if ($this->isManyToMany()) {
+        if ($this->isToMany()) {
             $queryBuilder
                 ->distinct()
                 ->join($this->rootAlias . '.' . $this->getMappingFieldName(), $alias, Join::WITH, $subQb->getDQLPart('where'));
@@ -198,9 +198,9 @@ class Field implements FieldInterface
     /**
      * Whether this association is a many to many.
      */
-    public function isManyToMany(): bool
+    public function isToMany(): bool
     {
-        return isset($this->mapping['joinTable']);
+        return isset($this->mapping['type']) && $this->mapping['type'] & ClassMetadata::TO_MANY;
     }
 
     /**
