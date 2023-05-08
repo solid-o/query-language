@@ -10,9 +10,7 @@ use function Safe\sprintf;
 
 final class GreaterThanExpression extends ComparisonExpression
 {
-    /**
-     * @param mixed|LiteralExpression $value
-     */
+    /** @param mixed|LiteralExpression $value */
     public function __construct($value)
     {
         parent::__construct($value, '>');

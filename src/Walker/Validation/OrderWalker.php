@@ -16,12 +16,11 @@ class OrderWalker extends ValidationWalker
     /** @var string[] */
     private array $orderableFields;
 
-    /**
-     * @param string[] $orderableFields
-     */
+    /** @param string[] $orderableFields */
     public function __construct(array $orderableFields)
     {
         parent::__construct();
+
         $this->orderableFields = $orderableFields;
     }
 

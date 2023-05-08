@@ -6,9 +6,7 @@ namespace Solido\QueryLanguage\Processor;
 
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 
-/**
- * @property string $fieldName
- */
+/** @property string $fieldName */
 interface FieldInterface
 {
     /**

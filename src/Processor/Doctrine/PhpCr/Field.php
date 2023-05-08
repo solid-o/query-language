@@ -20,9 +20,7 @@ use function assert;
 use function count;
 use function is_string;
 
-/**
- * @internal
- */
+/** @internal */
 class Field implements FieldInterface
 {
     private string $rootAlias;

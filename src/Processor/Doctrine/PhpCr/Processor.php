@@ -30,9 +30,7 @@ class Processor extends AbstractProcessor
     private ClassMetadata $rootDocument;
     private string $rootAlias;
 
-    /**
-     * @param array<string, mixed> $options
-     */
+    /** @param array<string, mixed> $options */
     public function __construct(
         QueryBuilder $queryBuilder,
         DocumentManagerInterface $documentManager,

@@ -26,6 +26,7 @@ final class Grammar extends AbstractGrammar
     public function __construct(?CacheItemPoolInterface $cache = null)
     {
         parent::__construct();
+
         $this->cache = $cache;
     }
 

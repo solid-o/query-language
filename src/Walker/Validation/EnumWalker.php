@@ -23,12 +23,11 @@ class EnumWalker extends ValidationWalker
     /** @var string[] */
     private array $values;
 
-    /**
-     * @param class-string<Enum>|string[] $values
-     */
+    /** @param class-string<Enum>|string[] $values */
     public function __construct($values)
     {
         parent::__construct();
+
         if (is_string($values) && class_exists($values) && is_subclass_of($values, Enum::class, true)) {
             $values = $values::toArray();
         }

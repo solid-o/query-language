@@ -34,9 +34,7 @@ abstract class AbstractProcessor
     private DataMapperFactory $dataMapperFactory;
     private AdapterFactoryInterface $adapterFactory;
 
-    /**
-     * @param mixed[] $options
-     */
+    /** @param mixed[] $options */
     public function __construct(DataMapperFactory $dataMapperFactory, array $options = [])
     {
         $this->options = $this->resolveOptions($options);
@@ -168,7 +166,7 @@ abstract class AbstractProcessor
         $checksumField = $this->getIdentifierFieldNames()[0];
         if (isset($this->options['continuation_token']['checksum_field'])) {
             $checksumField = $this->options['continuation_token']['checksum_field'];
-            $checksumField = $this->fields[$checksumField]->fieldName;
+            $checksumField = $this->fields[$checksumField]->fieldName; // @phpstan-ignore-line
         }
 
         return $checksumField;

@@ -32,9 +32,7 @@ class Processor extends AbstractProcessor
     /** @var string[] */
     private array $identifierFields;
 
-    /**
-     * @param mixed[] $options
-     */
+    /** @param mixed[] $options */
     public function __construct(QueryBuilder $queryBuilder, DataMapperFactory $dataMapperFactory, array $options = [])
     {
         parent::__construct($dataMapperFactory, $options);
@@ -43,9 +41,7 @@ class Processor extends AbstractProcessor
         $this->queryBuilder = $queryBuilder;
     }
 
-    /**
-     * @throws MappingErrorException
-     */
+    /** @throws MappingErrorException */
     public function processRequest(object $request): ObjectIteratorInterface
     {
         $result = $this->handleRequest($request);
@@ -143,7 +139,7 @@ class Processor extends AbstractProcessor
             }
         }
 
-        $checksumField = $checksumField instanceof FieldInterface ? $checksumField->fieldName : $checksumField;
+        $checksumField = $checksumField instanceof FieldInterface ? $checksumField->fieldName : $checksumField; // @phpstan-ignore-line
         assert(is_string($checksumField));
 
         return [

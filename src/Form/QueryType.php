@@ -51,7 +51,7 @@ class QueryType extends AbstractType
 
                         $data[$field] = $default;
                         $event->setData($data);
-                    }
+                    },
                 );
             }
         }

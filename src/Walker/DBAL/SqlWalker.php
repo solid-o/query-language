@@ -115,7 +115,7 @@ class SqlWalker extends AbstractWalker
     {
         return '(' . implode(' AND ', array_map(
             fn (ExpressionInterface $expression) => $expression->dispatch($this),
-            $arguments
+            $arguments,
         )) . ')';
     }
 
@@ -126,7 +126,7 @@ class SqlWalker extends AbstractWalker
     {
         return '(' . implode(' OR ', array_map(
             fn (ExpressionInterface $expression) => $expression->dispatch($this),
-            $arguments
+            $arguments,
         )) . ')';
     }
 
@@ -147,7 +147,7 @@ class SqlWalker extends AbstractWalker
     {
         $params = $this->queryBuilder->getParameters();
         $underscoreField = mb_strtolower(
-            preg_replace('/(?|(?<=[a-z0-9])([A-Z])|(?<=[A-Z]{2})([a-z]))/', '_$1', $this->field)
+            preg_replace('/(?|(?<=[a-z0-9])([A-Z])|(?<=[A-Z]{2})([a-z]))/', '_$1', $this->field),
         );
         $parameterName = $origParamName = preg_replace('/\W+/', '_', $underscoreField);
 

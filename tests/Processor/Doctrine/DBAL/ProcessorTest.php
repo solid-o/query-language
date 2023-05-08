@@ -30,6 +30,7 @@ class ProcessorTest extends TestCase
     use FixturesTrait;
 
     private Processor $processor;
+    private DataMapperFactory $dataMapperFactory;
 
     protected function setUp(): void
     {

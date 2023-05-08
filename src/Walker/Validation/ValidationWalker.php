@@ -21,9 +21,7 @@ class ValidationWalker extends AbstractWalker implements ValidationWalkerInterfa
         $this->validationContext = $context;
     }
 
-    /**
-     * @param mixed[] $parameters
-     */
+    /** @param mixed[] $parameters */
     protected function addViolation(string $message, array $parameters = []): void
     {
         if ($this->validationContext === null) {

@@ -18,9 +18,7 @@ final class AndExpression implements LogicalExpressionInterface
     /** @var ExpressionInterface[] */
     private array $arguments;
 
-    /**
-     * @param ExpressionInterface[] $arguments
-     */
+    /** @param ExpressionInterface[] $arguments */
     private function __construct(array $arguments)
     {
         $this->arguments = $arguments;
@@ -31,9 +29,7 @@ final class AndExpression implements LogicalExpressionInterface
         return '$and(' . implode(', ', $this->arguments) . ')';
     }
 
-    /**
-     * @param ExpressionInterface[] $arguments
-     */
+    /** @param ExpressionInterface[] $arguments */
     public static function create(array $arguments): ExpressionInterface
     {
         $arguments = array_values(

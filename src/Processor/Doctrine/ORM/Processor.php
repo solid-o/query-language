@@ -56,9 +56,7 @@ class Processor extends AbstractProcessor
         return $this->rootEntity->getIdentifierColumnNames();
     }
 
-    /**
-     * @throws MappingErrorException
-     */
+    /** @throws MappingErrorException */
     public function processRequest(object $request): ObjectIteratorInterface
     {
         $result = $this->handleRequest($request);

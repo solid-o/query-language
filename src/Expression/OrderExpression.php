@@ -21,9 +21,7 @@ final class OrderExpression implements ExpressionInterface
     /** @phpstan-var 'asc'|'desc' */
     private string $direction;
 
-    /**
-     * @phpstan-param 'asc'|'desc' $direction
-     */
+    /** @phpstan-param 'asc'|'desc' $direction */
     public function __construct(string $field, string $direction)
     {
         $this->field = $field;

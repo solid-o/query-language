@@ -21,9 +21,7 @@ abstract class ComparisonExpression implements ComparisonExpressionInterface
      */
     protected string $operator;
 
-    /**
-     * @param mixed|LiteralExpression $value
-     */
+    /** @param mixed|LiteralExpression $value */
     public function __construct($value, string $operator)
     {
         assert($value instanceof LiteralExpression, self::getShortName() . ' accepts only literal expressions as argument #1. Passed ' . $value);

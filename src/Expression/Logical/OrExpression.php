@@ -17,9 +17,7 @@ final class OrExpression implements LogicalExpressionInterface
     /** @var ExpressionInterface[] */
     private array $arguments;
 
-    /**
-     * @param ExpressionInterface[] $arguments
-     */
+    /** @param ExpressionInterface[] $arguments */
     private function __construct(array $arguments)
     {
         $this->arguments = $arguments;
@@ -30,9 +28,7 @@ final class OrExpression implements LogicalExpressionInterface
         return '$or(' . implode(', ', $this->arguments) . ')';
     }
 
-    /**
-     * @param ExpressionInterface[] $arguments
-     */
+    /** @param ExpressionInterface[] $arguments */
     public static function create(array $arguments): ExpressionInterface
     {
         foreach ($arguments as $argument) {

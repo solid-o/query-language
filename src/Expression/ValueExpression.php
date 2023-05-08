@@ -15,9 +15,7 @@ class ValueExpression implements ExpressionInterface
      */
     protected $value;
 
-    /**
-     * @param mixed $value
-     */
+    /** @param mixed $value */
     protected function __construct($value)
     {
         $this->value = $value;

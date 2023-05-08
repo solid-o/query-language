@@ -13,9 +13,7 @@ use Solido\QueryLanguage\Walker\DBAL\SqlWalker;
 
 use function is_string;
 
-/**
- * @internal
- */
+/** @internal */
 class Field implements FieldInterface
 {
     private string $fieldType;
