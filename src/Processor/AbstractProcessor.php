@@ -166,7 +166,7 @@ abstract class AbstractProcessor
         $checksumField = $this->getIdentifierFieldNames()[0];
         if (isset($this->options['continuation_token']['checksum_field'])) {
             $checksumField = $this->options['continuation_token']['checksum_field'];
-            $checksumField = $this->fields[$checksumField]->fieldName; // @phpstan-ignore-line
+            $checksumField = $this->fields[$checksumField]->fieldName;
         }
 
         return $checksumField;

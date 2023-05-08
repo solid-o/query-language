@@ -139,7 +139,7 @@ class Processor extends AbstractProcessor
             }
         }
 
-        $checksumField = $checksumField instanceof FieldInterface ? $checksumField->fieldName : $checksumField; // @phpstan-ignore-line
+        $checksumField = $checksumField instanceof FieldInterface ? $checksumField->fieldName : $checksumField;
         assert(is_string($checksumField));
 
         return [

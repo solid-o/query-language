@@ -46,11 +46,11 @@ abstract class AbstractProcessor extends BaseAbstractProcessor
         $field = $this->createField($options['field_name']);
 
         if ($options['walker'] !== null) {
-            $field->customWalker = $options['walker']; // @phpstan-ignore-line
+            $field->customWalker = $options['walker'];
         }
 
         if ($options['validation_walker'] !== null) {
-            $field->validationWalker = $options['validation_walker']; // @phpstan-ignore-line
+            $field->validationWalker = $options['validation_walker'];
         }
 
         $this->fields[$name] = $field;
