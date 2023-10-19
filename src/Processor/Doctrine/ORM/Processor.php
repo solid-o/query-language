@@ -8,7 +8,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\QueryBuilder;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
-use Refugis\DoctrineExtra\ORM\EntityIterator;
 use Solido\DataMapper\DataMapperFactory;
 use Solido\DataMapper\Exception\MappingErrorException;
 use Solido\Pagination\Doctrine\ORM\PagerIterator;
@@ -18,13 +17,11 @@ use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 
-use function array_key_first;
 use function assert;
 
 class Processor extends AbstractProcessor
 {
     private string $rootAlias;
-    private QueryBuilder $queryBuilder;
     private EntityManagerInterface $entityManager;
     private ClassMetadata $rootEntity;
 
@@ -32,11 +29,13 @@ class Processor extends AbstractProcessor
      * @param array<string, mixed> $options
      * @phpstan-param array{order_field?: string, skip_field?: string, limit_field?: string, default_order?: string, default_page_size?: int, order_validation_walker?: ValidationWalkerInterface, continuation_token?: bool|array{field:string, checksum_field:string}} $options
      */
-    public function __construct(QueryBuilder $queryBuilder, DataMapperFactory $dataMapperFactory, array $options = [])
-    {
+    public function __construct(
+        private readonly QueryBuilder $queryBuilder,
+        DataMapperFactory $dataMapperFactory,
+        array $options = [],
+    ) {
         parent::__construct($dataMapperFactory, $options);
 
-        $this->queryBuilder = $queryBuilder;
         $this->entityManager = $this->queryBuilder->getEntityManager();
 
         $this->rootAlias = $this->queryBuilder->getRootAliases()[0];
@@ -49,7 +48,7 @@ class Processor extends AbstractProcessor
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function getIdentifierFieldNames(): array
     {
@@ -61,9 +60,6 @@ class Processor extends AbstractProcessor
     {
         $result = $this->handleRequest($request);
         $this->attachToQueryBuilder($result->filters);
-        if ($result->skip !== null) {
-            $this->queryBuilder->setFirstResult($result->skip);
-        }
 
         return $this->buildIterator($this->queryBuilder, $result);
     }
@@ -76,30 +72,14 @@ class Processor extends AbstractProcessor
             $pageSize = $this->options['max_page_size'];
         }
 
-        if ($result->ordering !== null) {
-            $ordering = $this->parseOrderings($queryBuilder, $result->ordering);
-            if ($ordering && $this->options['continuation_token']) {
-                $iterator = new PagerIterator($queryBuilder, $ordering);
-                $iterator->setToken($result->pageToken);
-                if ($pageSize !== null) {
-                    $iterator->setPageSize($pageSize);
-                }
-
-                return $iterator;
-            }
-
-            $key = array_key_first($ordering);
-            if ($key !== null) {
-                $alias = $queryBuilder->getRootAliases()[0];
-                $queryBuilder->orderBy($alias . '.' . $key, $ordering[$key]);
-            }
-        }
-
+        $ordering = $this->parseOrderings($queryBuilder, $result->ordering);
+        $iterator = new PagerIterator($queryBuilder, $ordering);
+        $iterator->setCurrentPage($result->page);
         if ($pageSize !== null) {
-            $queryBuilder->setMaxResults($pageSize);
+            $iterator->setPageSize($pageSize);
         }
 
-        return new EntityIterator($queryBuilder);
+        return $iterator;
     }
 
     /**

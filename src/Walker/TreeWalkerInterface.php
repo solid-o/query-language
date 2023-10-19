@@ -12,61 +12,45 @@ interface TreeWalkerInterface
 {
     /**
      * Evaluates a literal expression.
-     *
-     * @return mixed
      */
-    public function walkLiteral(LiteralExpression $expression);
+    public function walkLiteral(LiteralExpression $expression): mixed;
 
     /**
      * Evaluates a comparison expression.
-     *
-     * @return mixed
      */
-    public function walkComparison(string $operator, ValueExpression $expression);
+    public function walkComparison(string $operator, ValueExpression $expression): mixed;
 
     /**
      * Evaluates a match all expression.
-     *
-     * @return mixed
      */
-    public function walkAll();
+    public function walkAll(): mixed;
 
     /**
      * Evaluates an order expression.
-     *
-     * @return mixed
      */
-    public function walkOrder(string $field, string $direction);
+    public function walkOrder(string $field, string $direction): mixed;
 
     /**
      * Evaluates a NOT expression.
-     *
-     * @return mixed
      */
-    public function walkNot(ExpressionInterface $expression);
+    public function walkNot(ExpressionInterface $expression): mixed;
 
     /**
      * Evaluates an AND expression.
      *
      * @param ExpressionInterface[] $arguments
-     *
-     * @return mixed
      */
-    public function walkAnd(array $arguments);
+    public function walkAnd(array $arguments): mixed;
 
     /**
      * Evaluates an OR expression.
      *
      * @param ExpressionInterface[] $arguments
-     *
-     * @return mixed
      */
-    public function walkOr(array $arguments);
+    public function walkOr(array $arguments): mixed;
 
     /**
      * Evaluates an ENTRY expression.
-     *
-     * @return mixed
      */
-    public function walkEntry(string $key, ExpressionInterface $expression);
+    public function walkEntry(string $key, ExpressionInterface $expression): mixed;
 }

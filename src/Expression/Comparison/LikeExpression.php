@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Expression\Comparison;
 
-use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
-
-use function Safe\sprintf;
+use function sprintf;
 
 final class LikeExpression extends ComparisonExpression
 {
-    /** @param mixed|LiteralExpression $value */
-    public function __construct($value)
+    public function __construct(mixed $value)
     {
         parent::__construct($value, 'like');
     }

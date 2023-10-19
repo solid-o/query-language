@@ -16,13 +16,13 @@ class StringToExpresionTransformer implements DataTransformerInterface
 {
     private Grammar $grammar;
 
-    public function __construct(?Grammar $grammar = null)
+    public function __construct(Grammar|null $grammar = null)
     {
         $this->grammar = $grammar ?? Grammar::getInstance();
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function transform($value): string
     {
@@ -38,9 +38,9 @@ class StringToExpresionTransformer implements DataTransformerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function reverseTransform($value): ?ExpressionInterface
+    public function reverseTransform($value): ExpressionInterface|null
     {
         if ($value === null || $value === '') {
             return null;

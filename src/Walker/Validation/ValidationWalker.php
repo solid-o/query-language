@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class ValidationWalker extends AbstractWalker implements ValidationWalkerInterface
 {
-    protected ?ExecutionContextInterface $validationContext;
+    protected ExecutionContextInterface|null $validationContext;
 
     public function __construct()
     {

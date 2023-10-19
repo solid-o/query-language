@@ -10,72 +10,67 @@ use Solido\QueryLanguage\Expression\ValueExpression;
 
 abstract class AbstractWalker implements TreeWalkerInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function walkLiteral(LiteralExpression $expression)
+    public function walkLiteral(LiteralExpression $expression): mixed
     {
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkComparison(string $operator, ValueExpression $expression)
+    public function walkComparison(string $operator, ValueExpression $expression): mixed
     {
         if (! $expression instanceof LiteralExpression) {
-            return;
+            return null;
         }
 
         $this->walkLiteral($expression);
+
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkAll()
+    public function walkAll(): mixed
     {
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkOrder(string $field, string $direction)
+    public function walkOrder(string $field, string $direction): mixed
     {
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkNot(ExpressionInterface $expression)
+    public function walkNot(ExpressionInterface $expression): mixed
     {
         $expression->dispatch($this);
+
+        return null;
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function walkAnd(array $arguments)
+    public function walkAnd(array $arguments): mixed
     {
         foreach ($arguments as $expression) {
             $expression->dispatch($this);
         }
+
+        return null;
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function walkOr(array $arguments)
+    public function walkOr(array $arguments): mixed
     {
         foreach ($arguments as $expression) {
             $expression->dispatch($this);
         }
+
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkEntry(string $key, ExpressionInterface $expression)
+    public function walkEntry(string $key, ExpressionInterface $expression): mixed
     {
         $expression->dispatch($this);
+
+        return null;
     }
 }

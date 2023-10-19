@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Walker\DBAL;
 
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Types;
-use Safe\DateTime;
-use Safe\DateTimeImmutable;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use Solido\QueryLanguage\Expression\Literal\NullExpression;
@@ -18,31 +18,27 @@ use Solido\QueryLanguage\Walker\AbstractWalker;
 
 use function array_key_exists;
 use function array_map;
+use function assert;
 use function implode;
+use function is_string;
 use function mb_strtolower;
 use function Safe\preg_replace;
 
 class SqlWalker extends AbstractWalker
 {
     private AbstractPlatform $platform;
-    protected QueryBuilder $queryBuilder;
-    private ?string $fieldType;
-    private string $field;
     private string $quotedField;
 
-    public function __construct(QueryBuilder $queryBuilder, string $field, ?string $fieldType = null)
-    {
+    public function __construct(
+        protected QueryBuilder $queryBuilder,
+        private readonly string $field,
+        private readonly string|null $fieldType = null,
+    ) {
         $this->platform = $queryBuilder->getConnection()->getDatabasePlatform();
-        $this->field = $field;
         $this->quotedField = $this->platform->quoteIdentifier($field);
-        $this->queryBuilder = $queryBuilder;
-        $this->fieldType = $fieldType;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkLiteral(LiteralExpression $expression)
+    public function walkLiteral(LiteralExpression $expression): mixed
     {
         $value = $expression->getValue();
         if ($expression instanceof NullExpression) {
@@ -63,10 +59,7 @@ class SqlWalker extends AbstractWalker
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkComparison(string $operator, ValueExpression $expression)
+    public function walkComparison(string $operator, ValueExpression $expression): mixed
     {
         $field = $this->quotedField;
         if ($expression instanceof NullExpression) {
@@ -84,34 +77,25 @@ class SqlWalker extends AbstractWalker
         return $field . ' ' . $operator . ' :' . $parameterName;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkAll()
+    public function walkAll(): mixed
     {
-        // Do nothing.
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkOrder(string $field, string $direction)
+    public function walkOrder(string $field, string $direction): mixed
     {
         return 'ORDER BY ' . $this->platform->quoteIdentifier($field) . ' ' . $direction;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkNot(ExpressionInterface $expression)
+    public function walkNot(ExpressionInterface $expression): mixed
     {
-        return $this->platform->getNotExpression($expression->dispatch($this));
+        return 'NOT(' . $expression->dispatch($this) . ')';
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function walkAnd(array $arguments)
+    public function walkAnd(array $arguments): mixed
     {
         return '(' . implode(' AND ', array_map(
             fn (ExpressionInterface $expression) => $expression->dispatch($this),
@@ -120,9 +104,9 @@ class SqlWalker extends AbstractWalker
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function walkOr(array $arguments)
+    public function walkOr(array $arguments): mixed
     {
         return '(' . implode(' OR ', array_map(
             fn (ExpressionInterface $expression) => $expression->dispatch($this),
@@ -130,10 +114,7 @@ class SqlWalker extends AbstractWalker
         )) . ')';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkEntry(string $key, ExpressionInterface $expression)
+    public function walkEntry(string $key, ExpressionInterface $expression): mixed
     {
         $walker = new SqlWalker($this->queryBuilder, $this->field . '.' . $key);
 
@@ -146,10 +127,12 @@ class SqlWalker extends AbstractWalker
     protected function generateParameterName(): string
     {
         $params = $this->queryBuilder->getParameters();
-        $underscoreField = mb_strtolower(
-            preg_replace('/(?|(?<=[a-z0-9])([A-Z])|(?<=[A-Z]{2})([a-z]))/', '_$1', $this->field),
-        );
+        $underscoreField = mb_strtolower(preg_replace('/(?|(?<=[a-z0-9])([A-Z])|(?<=[A-Z]{2})([a-z]))/', '_$1', $this->field)); /* @phpstan-ignore-line */
+
         $parameterName = $origParamName = preg_replace('/\W+/', '_', $underscoreField);
+
+        assert(is_string($parameterName));
+        assert(is_string($origParamName));
 
         $i = 1;
         while (array_key_exists($parameterName, $params)) {

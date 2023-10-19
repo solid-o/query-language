@@ -10,10 +10,7 @@ use function is_numeric;
 
 class NumericWalker extends ValidationWalker
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function walkLiteral(LiteralExpression $expression)
+    public function walkLiteral(LiteralExpression $expression): mixed
     {
         if (! is_numeric($expression->getValue())) {
             $this->addViolation('"{{ value }}" is not numeric.', [

@@ -11,7 +11,6 @@ use Doctrine\ODM\PHPCR\Query\Builder\From;
 use Doctrine\ODM\PHPCR\Query\Builder\QueryBuilder;
 use Doctrine\ODM\PHPCR\Query\Builder\SourceDocument;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
-use Refugis\DoctrineExtra\ODM\PhpCr\DocumentIterator;
 use Solido\DataMapper\DataMapperFactory;
 use Solido\DataMapper\Exception\MappingErrorException;
 use Solido\Pagination\Doctrine\PhpCr\PagerIterator;
@@ -20,27 +19,21 @@ use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 
-use function array_key_first;
 use function assert;
 
 class Processor extends AbstractProcessor
 {
-    private QueryBuilder $queryBuilder;
-    private DocumentManagerInterface $documentManager;
     private ClassMetadata $rootDocument;
     private string $rootAlias;
 
     /** @param array<string, mixed> $options */
     public function __construct(
-        QueryBuilder $queryBuilder,
-        DocumentManagerInterface $documentManager,
+        private readonly QueryBuilder $queryBuilder,
+        private readonly DocumentManagerInterface $documentManager,
         DataMapperFactory $dataMapperFactory,
-        array $options = []
+        array $options = [],
     ) {
         parent::__construct($dataMapperFactory, $options);
-
-        $this->queryBuilder = $queryBuilder;
-        $this->documentManager = $documentManager;
 
         $fromNode = $this->queryBuilder->getChildOfType(AbstractNode::NT_FROM);
         assert($fromNode instanceof From);
@@ -62,7 +55,7 @@ class Processor extends AbstractProcessor
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function getIdentifierFieldNames(): array
     {
@@ -79,9 +72,6 @@ class Processor extends AbstractProcessor
     {
         $result = $this->handleRequest($request);
         $this->attachToQueryBuilder($result->filters);
-        if ($result->skip !== null) {
-            $this->queryBuilder->setFirstResult($result->skip);
-        }
 
         return $this->buildIterator($this->queryBuilder, $result);
     }
@@ -94,40 +84,14 @@ class Processor extends AbstractProcessor
             $pageSize = $this->options['max_page_size'];
         }
 
-        if ($result->ordering !== null) {
-            $ordering = $this->parseOrderings($queryBuilder, $result->ordering);
-            if ($ordering && $this->options['continuation_token']) {
-                $iterator = new PagerIterator($queryBuilder, $ordering);
-                $iterator->setToken($result->pageToken);
-                if ($pageSize !== null) {
-                    $iterator->setPageSize($pageSize);
-                }
-
-                return $iterator;
-            }
-
-            $key = array_key_first($ordering);
-
-            if ($key !== null) {
-                $fromNode = $queryBuilder->getChildOfType(AbstractNode::NT_FROM);
-                assert($fromNode instanceof From);
-                $source = $fromNode->getChildOfType(AbstractNode::NT_SOURCE);
-                assert($source instanceof SourceDocument);
-                $alias = $source->getAlias();
-
-                if ($this->rootDocument->getTypeOfField($key) === 'nodename') {
-                    $queryBuilder->orderBy()->{$ordering[$key]}()->localName($alias);
-                } else {
-                    $queryBuilder->orderBy()->{$ordering[$key]}()->field($alias . '.' . $key);
-                }
-            }
-        }
-
+        $ordering = $this->parseOrderings($queryBuilder, $result->ordering);
+        $iterator = new PagerIterator($queryBuilder, $ordering);
+        $iterator->setCurrentPage($result->page);
         if ($pageSize !== null) {
-            $queryBuilder->setMaxResults($pageSize);
+            $iterator->setPageSize($pageSize);
         }
 
-        return new DocumentIterator($queryBuilder);
+        return $iterator;
     }
 
     /**

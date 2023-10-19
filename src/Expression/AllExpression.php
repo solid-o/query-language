@@ -13,10 +13,7 @@ final class AllExpression implements ExpressionInterface
         return '$all()';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function dispatch(TreeWalkerInterface $treeWalker)
+    public function dispatch(TreeWalkerInterface $treeWalker): mixed
     {
         return $treeWalker->walkAll();
     }

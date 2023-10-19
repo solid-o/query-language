@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Solido\QueryLanguage\Processor\Doctrine\DBAL;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Refugis\DoctrineExtra\DBAL\RowIterator;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
 use Solido\DataMapper\DataMapperFactory;
 use Solido\DataMapper\Exception\MappingErrorException;
@@ -18,7 +17,6 @@ use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Processor\OrderableFieldInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-use function array_key_first;
 use function array_values;
 use function assert;
 use function explode;
@@ -27,18 +25,18 @@ use function strpos;
 
 class Processor extends AbstractProcessor
 {
-    private QueryBuilder $queryBuilder;
-
     /** @var string[] */
     private array $identifierFields;
 
     /** @param mixed[] $options */
-    public function __construct(QueryBuilder $queryBuilder, DataMapperFactory $dataMapperFactory, array $options = [])
-    {
+    public function __construct(
+        private readonly QueryBuilder $queryBuilder,
+        DataMapperFactory $dataMapperFactory,
+        array $options = [],
+    ) {
         parent::__construct($dataMapperFactory, $options);
 
         $this->identifierFields = array_values($this->options['identifiers']);
-        $this->queryBuilder = $queryBuilder;
     }
 
     /** @throws MappingErrorException */
@@ -46,9 +44,6 @@ class Processor extends AbstractProcessor
     {
         $result = $this->handleRequest($request);
         $this->attachToQueryBuilder($result->filters);
-        if ($result->skip !== null) {
-            $this->queryBuilder->setFirstResult($result->skip);
-        }
 
         return $this->buildIterator($this->queryBuilder, $result);
     }
@@ -61,34 +56,15 @@ class Processor extends AbstractProcessor
             $pageSize = $this->options['max_page_size'];
         }
 
-        if ($result->ordering !== null) {
-            $ordering = $this->parseOrderings($queryBuilder, $result->ordering);
-            if ($ordering && $this->options['continuation_token']) {
-                $iterator = new PagerIterator($queryBuilder, $ordering);
-                $iterator->setToken($result->pageToken);
-                if ($pageSize !== null) {
-                    $iterator->setPageSize($pageSize);
-                }
-
-                return $iterator;
-            }
-
-            $key = array_key_first($ordering);
-            if ($key !== null) {
-                $queryBuilder = $queryBuilder->getConnection()
-                    ->createQueryBuilder()
-                    ->select('*')
-                    ->from('(' . $queryBuilder->getSQL() . ')', 'x')
-                    ->setFirstResult($result->skip ?? 0)
-                    ->orderBy($key, $ordering[$key]);
-            }
-        }
+        $ordering = $this->parseOrderings($queryBuilder, $result->ordering);
+        $iterator = new PagerIterator($queryBuilder, $ordering);
+        $iterator->setCurrentPage($result->page);
 
         if ($pageSize !== null) {
-            $queryBuilder->setMaxResults($pageSize);
+            $iterator->setPageSize($pageSize);
         }
 
-        return new RowIterator($queryBuilder);
+        return $iterator;
     }
 
     protected function createField(string $fieldName): FieldInterface
@@ -102,7 +78,7 @@ class Processor extends AbstractProcessor
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function getIdentifierFieldNames(): array
     {
@@ -117,8 +93,12 @@ class Processor extends AbstractProcessor
      * @return array<string, string>
      * @phpstan-return array<string, 'asc'|'desc'>
      */
-    protected function parseOrderings(object $queryBuilder, OrderExpression $ordering): array
+    protected function parseOrderings(object $queryBuilder, OrderExpression|null $ordering): array
     {
+        if ($ordering === null) {
+            return [];
+        }
+
         $checksumField = $this->options['continuation_token']['checksum_field'] ?? $this->getIdentifierFieldNames()[0] ?? null;
         $field = $this->fields[$ordering->getField()];
 
@@ -139,7 +119,7 @@ class Processor extends AbstractProcessor
             }
         }
 
-        $checksumField = $checksumField instanceof FieldInterface ? $checksumField->fieldName : $checksumField;
+        $checksumField = $checksumField instanceof FieldInterface ? $checksumField->fieldName : $checksumField; /* @phpstan-ignore-line */
         assert(is_string($checksumField));
 
         return [

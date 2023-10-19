@@ -15,19 +15,15 @@ use Solido\QueryLanguage\Expression\Logical;
 use Solido\QueryLanguage\Expression\OrderExpression;
 
 use function assert;
-use function get_class;
 use function md5;
 
 final class Grammar extends AbstractGrammar
 {
-    private static ?self $instance = null;
-    private ?CacheItemPoolInterface $cache;
+    private static self|null $instance = null;
 
-    public function __construct(?CacheItemPoolInterface $cache = null)
+    public function __construct(private readonly CacheItemPoolInterface|null $cache = null)
     {
         parent::__construct();
-
-        $this->cache = $cache;
     }
 
     /**
@@ -47,9 +43,9 @@ final class Grammar extends AbstractGrammar
      *
      * @param class-string<ExpressionInterface>|class-string<ExpressionInterface>[] $accept
      */
-    public function parse(string $input, $accept = ExpressionInterface::class): ExpressionInterface
+    public function parse(string $input, string|array $accept = ExpressionInterface::class): ExpressionInterface
     {
-        $item = $this->cache !== null ? $this->cache->getItem(md5($input)) : null;
+        $item = $this->cache?->getItem(md5($input));
         if (isset($item) && $item->isHit()) {
             $expr = $item->get();
         } else {
@@ -67,65 +63,39 @@ final class Grammar extends AbstractGrammar
             }
         }
 
-        throw new InvalidArgumentException(get_class($expr) . ' is not acceptable');
+        throw new InvalidArgumentException($expr::class . ' is not acceptable');
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function unaryExpression(string $type, $value): ExpressionInterface
     {
-        switch ($type) {
-            case 'all':
-                return new AllExpression();
-
-            case 'not':
-                return Logical\NotExpression::create($value);
-
-            case 'exists':
-                return Logical\NotExpression::create(new Comparison\EqualExpression(LiteralExpression::create('null')));
-
-            case 'eq':
-                return new Comparison\EqualExpression($value);
-
-            case 'neq':
-                return Logical\NotExpression::create(new Comparison\EqualExpression($value));
-
-            case 'lt':
-                return new Comparison\LessThanExpression($value);
-
-            case 'lte':
-                return new Comparison\LessThanOrEqualExpression($value);
-
-            case 'gt':
-                return new Comparison\GreaterThanExpression($value);
-
-            case 'gte':
-                return new Comparison\GreaterThanOrEqualExpression($value);
-
-            case 'like':
-                return new Comparison\LikeExpression($value);
-
-            default:
-                throw new InvalidArgumentException('Unknown unary operator "' . $type . '"');
-        }
+        return match ($type) {
+            'all' => new AllExpression(),
+            'not' => Logical\NotExpression::create($value),
+            'exists' => Logical\NotExpression::create(new Comparison\EqualExpression(LiteralExpression::create('null'))),
+            'eq' => new Comparison\EqualExpression($value),
+            'neq' => Logical\NotExpression::create(new Comparison\EqualExpression($value)),
+            'lt' => new Comparison\LessThanExpression($value),
+            'lte' => new Comparison\LessThanOrEqualExpression($value),
+            'gt' => new Comparison\GreaterThanExpression($value),
+            'gte' => new Comparison\GreaterThanOrEqualExpression($value),
+            'like' => new Comparison\LikeExpression($value),
+            default => throw new InvalidArgumentException('Unknown unary operator "' . $type . '"'),
+        };
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function binaryExpression(string $type, $left, $right): ExpressionInterface
     {
-        switch ($type) {
-            case 'range':
-                return Logical\AndExpression::create([new Comparison\GreaterThanOrEqualExpression($left), new Comparison\LessThanOrEqualExpression($right)]);
-
-            case 'entry':
-                return EntryExpression::create($left, $right);
-
-            default:
-                throw new InvalidArgumentException('Unknown binary operator "' . $type . '"');
-        }
+        return match ($type) {
+            'range' => Logical\AndExpression::create([new Comparison\GreaterThanOrEqualExpression($left), new Comparison\LessThanOrEqualExpression($right)]),
+            'entry' => EntryExpression::create($left, $right),
+            default => throw new InvalidArgumentException('Unknown binary operator "' . $type . '"'),
+        };
     }
 
     /**
@@ -139,20 +109,14 @@ final class Grammar extends AbstractGrammar
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     protected function variadicExpression(string $type, array $arguments): ExpressionInterface
     {
-        switch ($type) {
-            case 'and':
-                return Logical\AndExpression::create($arguments);
-
-            case 'in':
-            case 'or':
-                return Logical\OrExpression::create($arguments);
-
-            default:
-                throw new InvalidArgumentException('Unknown operator "' . $type . '"');
-        }
+        return match ($type) {
+            'and' => Logical\AndExpression::create($arguments),
+            'in', 'or' => Logical\OrExpression::create($arguments),
+            default => throw new InvalidArgumentException('Unknown operator "' . $type . '"'),
+        };
     }
 }

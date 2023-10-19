@@ -15,13 +15,9 @@ use function implode;
 
 final class AndExpression implements LogicalExpressionInterface
 {
-    /** @var ExpressionInterface[] */
-    private array $arguments;
-
     /** @param ExpressionInterface[] $arguments */
-    private function __construct(array $arguments)
+    private function __construct(private array $arguments)
     {
-        $this->arguments = $arguments;
     }
 
     public function __toString(): string
@@ -48,10 +44,7 @@ final class AndExpression implements LogicalExpressionInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function dispatch(TreeWalkerInterface $treeWalker)
+    public function dispatch(TreeWalkerInterface $treeWalker): mixed
     {
         return $treeWalker->walkAnd($this->arguments);
     }

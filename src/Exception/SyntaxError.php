@@ -9,13 +9,13 @@ use Throwable;
 
 use function max;
 use function min;
-use function Safe\substr;
 use function strlen;
+use function substr;
 use function trim;
 
 class SyntaxError extends RuntimeException implements ExceptionInterface
 {
-    public function __construct(string $buffer = '', int $position = 0, ?Throwable $previous = null)
+    public function __construct(string $buffer = '', int $position = 0, Throwable|null $previous = null)
     {
         $start = max($position - 7, 0);
         $end = min($position + 20, strlen($buffer));

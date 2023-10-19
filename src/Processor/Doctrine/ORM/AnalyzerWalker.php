@@ -16,12 +16,11 @@ class AnalyzerWalker extends AbstractWalker
         $this->simple = true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkEntry(string $key, ExpressionInterface $expression)
+    public function walkEntry(string $key, ExpressionInterface $expression): mixed
     {
         $this->simple = false;
+
+        return null;
     }
 
     public function isSimple(): bool

@@ -12,18 +12,18 @@ use Solido\QueryLanguage\Processor\Doctrine\FieldInterface as DoctrineFieldInter
 use Solido\QueryLanguage\Processor\FieldInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-use function Safe\sprintf;
+use function sprintf;
 
 abstract class AbstractProcessor extends BaseAbstractProcessor
 {
     /**
      * Adds a field to this list processor.
      *
-     * @param array<null|string|callable>|FieldInterface $options
+     * @param array<string|callable|null>|FieldInterface $options
      *
      * @return $this
      */
-    public function addField(string $name, $options = []): self
+    public function addField(string $name, array|FieldInterface $options = []): self
     {
         if ($options instanceof FieldInterface) {
             $this->fields[$name] = $options;
@@ -46,11 +46,11 @@ abstract class AbstractProcessor extends BaseAbstractProcessor
         $field = $this->createField($options['field_name']);
 
         if ($options['walker'] !== null) {
-            $field->customWalker = $options['walker'];
+            $field->customWalker = $options['walker']; /* @phpstan-ignore-line */
         }
 
         if ($options['validation_walker'] !== null) {
-            $field->validationWalker = $options['validation_walker'];
+            $field->validationWalker = $options['validation_walker']; /* @phpstan-ignore-line */
         }
 
         $this->fields[$name] = $field;

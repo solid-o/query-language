@@ -14,7 +14,7 @@ use function get_debug_type;
 use function is_array;
 use function is_callable;
 use function is_string;
-use function Safe\sprintf;
+use function sprintf;
 
 /**
  * @Annotation
@@ -34,7 +34,7 @@ class Expression extends Constraint
      *
      * @param mixed $walker
      */
-    public function __construct($walker, ?array $groups = null, $payload = null, array $options = [])
+    public function __construct(mixed $walker, array|null $groups = null, $payload = null, array $options = [])
     {
         if (is_array($walker)) {
             $options = array_merge($walker, $options);

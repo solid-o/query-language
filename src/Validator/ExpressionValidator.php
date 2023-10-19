@@ -16,7 +16,7 @@ use function is_string;
 class ExpressionValidator extends ConstraintValidator
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      *
      * @param mixed $value
      */

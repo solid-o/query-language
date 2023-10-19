@@ -10,8 +10,7 @@ use Solido\QueryLanguage\Expression\EntryExpression;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Walker\TreeWalkerInterface;
 
-use function get_class;
-use function Safe\sprintf;
+use function sprintf;
 
 final class NotExpression implements LogicalExpressionInterface
 {
@@ -38,16 +37,13 @@ final class NotExpression implements LogicalExpressionInterface
         }
 
         if (! $expression instanceof ComparisonExpressionInterface && ! $expression instanceof LogicalExpressionInterface) {
-            throw new LogicException(sprintf('Cannot negate %s expression', get_class($expression)));
+            throw new LogicException(sprintf('Cannot negate %s expression', $expression::class));
         }
 
         return new self($expression);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function dispatch(TreeWalkerInterface $treeWalker)
+    public function dispatch(TreeWalkerInterface $treeWalker): mixed
     {
         return $treeWalker->walkNot($this->argument);
     }

@@ -15,8 +15,6 @@ interface ExpressionInterface
 
     /**
      * Dispatches the expression to the tree walker.
-     *
-     * @return mixed
      */
-    public function dispatch(TreeWalkerInterface $treeWalker);
+    public function dispatch(TreeWalkerInterface $treeWalker): mixed;
 }

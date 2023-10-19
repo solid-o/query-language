@@ -20,7 +20,7 @@ class DummyNode extends AbstractNode
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getCardinalityMap(): array
     {

@@ -51,7 +51,7 @@ class GrammarTest extends TestCase
         ];
 
         yield ['$eq(2)', new Expression\Comparison\EqualExpression(Expression\Literal\LiteralExpression::create('2'))];
-        yield ['$eq(null)', new Expression\Comparison\EqualExpression((new \ReflectionClass(Expression\Literal\NullExpression::class))->newInstanceWithoutConstructor())];
+        yield ['$eq(null)', new Expression\Comparison\EqualExpression(Expression\Literal\LiteralExpression::create('null'))];
         yield [
             '$neq(2)',
             Expression\Logical\NotExpression::create(
@@ -61,7 +61,7 @@ class GrammarTest extends TestCase
         yield [
             '$neq(null)',
             Expression\Logical\NotExpression::create(
-                new Expression\Comparison\EqualExpression((new \ReflectionClass(Expression\Literal\NullExpression::class))->newInstanceWithoutConstructor())
+                new Expression\Comparison\EqualExpression(Expression\Literal\LiteralExpression::create('null'))
             )
         ];
 

@@ -17,15 +17,12 @@ use function strtr;
 
 class SyntaxErrorTransformationFailureListener implements EventSubscriberInterface
 {
-    private ?TranslatorInterface $translator;
-
-    public function __construct(?TranslatorInterface $translator = null)
+    public function __construct(private readonly TranslatorInterface|null $translator = null)
     {
-        $this->translator = $translator;
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getSubscribedEvents(): array
     {

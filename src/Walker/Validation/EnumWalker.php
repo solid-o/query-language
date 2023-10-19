@@ -16,7 +16,7 @@ use function in_array;
 use function is_array;
 use function is_string;
 use function is_subclass_of;
-use function Safe\sprintf;
+use function sprintf;
 
 class EnumWalker extends ValidationWalker
 {
@@ -24,7 +24,7 @@ class EnumWalker extends ValidationWalker
     private array $values;
 
     /** @param class-string<Enum>|string[] $values */
-    public function __construct($values)
+    public function __construct(string|array $values)
     {
         parent::__construct();
 
@@ -39,10 +39,7 @@ class EnumWalker extends ValidationWalker
         $this->values = $values;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkLiteral(LiteralExpression $expression)
+    public function walkLiteral(LiteralExpression $expression): mixed
     {
         $expressionValue = $expression->getValue();
         if (in_array($expressionValue, $this->values, true)) {
@@ -53,21 +50,21 @@ class EnumWalker extends ValidationWalker
             '{{ value }}' => (string) $expressionValue,
             '{{ allowed_values }}' => implode('", "', $this->values),
         ]);
+
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkOrder(string $field, string $direction)
+    public function walkOrder(string $field, string $direction): mixed
     {
         $this->addViolation('Invalid operation');
+
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkEntry(string $key, ExpressionInterface $expression)
+    public function walkEntry(string $key, ExpressionInterface $expression): mixed
     {
         $this->addViolation('Invalid operation');
+
+        return null;
     }
 }

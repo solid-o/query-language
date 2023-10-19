@@ -10,6 +10,7 @@ use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\DBAL\SqlWalker;
+use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 
 use function is_string;
 
@@ -17,19 +18,14 @@ use function is_string;
 class Field implements FieldInterface
 {
     private string $fieldType;
-    public string $fieldName;
-    public ?string $tableName;
-
     /** @var string|callable|null */
     public $validationWalker;
 
     /** @var string|callable|null */
     public $customWalker;
 
-    public function __construct(string $fieldName, ?string $tableName = null, string $type = Types::STRING)
+    public function __construct(public string $fieldName, public string|null $tableName = null, string $type = Types::STRING)
     {
-        $this->fieldName = $fieldName;
-        $this->tableName = $tableName;
         $this->fieldType = $type;
 
         $this->validationWalker = null;
@@ -63,16 +59,13 @@ class Field implements FieldInterface
         $queryBuilder->andWhere($expression->dispatch($walker));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getValidationWalker()
+    public function getValidationWalker(): ValidationWalkerInterface|string|callable|null
     {
         return $this->validationWalker;
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getOrder(object $queryBuilder, OrderExpression $orderExpression): array
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Form;
 
+use Solido\Pagination\PageOffset;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Processor\FieldInterface;
@@ -11,6 +12,8 @@ use Solido\QueryLanguage\Validator\Expression;
 use Solido\QueryLanguage\Walker\Validation\OrderWalker;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\DataTransformerInterface;
+use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -25,7 +28,7 @@ use function assert;
 class QueryType extends AbstractType
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -57,14 +60,36 @@ class QueryType extends AbstractType
         }
 
         if ($options['continuation_token_field'] !== null) {
-            $builder->add($options['continuation_token_field'], PageTokenType::class, ['property_path' => 'pageToken']);
+            $builder->add($options['continuation_token_field'], PageTokenType::class, ['property_path' => 'page']);
         }
 
         if ($options['skip_field'] !== null) {
-            $builder->add($options['skip_field'], IntegerType::class, [
-                'property_path' => 'skip',
-                'constraints' => [new Range(['min' => 0])],
-            ]);
+            $builder->add(
+                $builder->create($options['skip_field'], IntegerType::class, ['property_path' => 'page'])->addModelTransformer(new class implements DataTransformerInterface {
+                    public function transform(mixed $value): int|null
+                    {
+                        if ($value instanceof PageOffset) {
+                            return $value->getOffset();
+                        }
+
+                        return null;
+                    }
+
+                    public function reverseTransform(mixed $value): PageOffset|null
+                    {
+                        if ($value === null) {
+                            return null;
+                        }
+
+                        $value = (int) $value;
+                        if ($value < 0) {
+                            throw new TransformationFailedException('Cannot be less than 0');
+                        }
+
+                        return new PageOffset($value);
+                    }
+                }),
+            );
         }
 
         if ($options['limit_field'] !== null) {

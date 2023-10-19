@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 // phpcs:ignoreFile
 
 namespace Solido\QueryLanguage\Grammar;
@@ -38,6 +40,7 @@ abstract class AbstractGrammar
     private const YY2TBLSTATE = 6;
     private const YYGLAST = 16;
 
+
     private const YYSTATES = 71;
     private const YYNLSTATES = 32;
     private const YYINTERRTOK = 1;
@@ -62,6 +65,7 @@ abstract class AbstractGrammar
 
     /** lexical element object **/
     private $yylval;
+
 
     private $yytranslate = [
             0,   23,   23,   23,   23,   23,   23,   23,   23,   23,
@@ -91,16 +95,16 @@ abstract class AbstractGrammar
            23,   23,   23,   23,   23,   23,   23,   23,   23,   23,
            23,   23,   23,   23,   23,   23,    1,    2,    3,    4,
             5,    6,    7,    8,    9,   10,   11,   12,   13,   14,
-           15,   16,   17,   18,   19,
+           15,   16,   17,   18,   19
     ];
 
     private $yyaction = [
            45,   13,   35,   36,   37,   38,   39,   40,   41,   33,
            15,   42,   43,   44,   46,   16,   45,    0,   33,   14,
-           65,    3,   56,   28,    4,   29,   34,    6,   14,    1,
-           46,    5,    7,    0,    8,   34,   49,    0,    9,   22,
-            6,    0,   48,   51,   57,   55,   54,   53,   52,    0,
-           10,    2,
+           56,   28,   65,    3,    1,   29,   34,    6,   14,    4,
+           46,    5,    7,    0,    8,   34,   51,    0,    9,   22,
+            6,    0,   48,   49,   52,   53,   57,   55,   54,    0,
+            2,   10
     ];
 
     private $yycheck = [
@@ -109,41 +113,41 @@ abstract class AbstractGrammar
            21,   22,   21,   22,   20,   17,   19,   20,   12,   20,
            17,   20,   20,   -1,   20,   19,   21,   -1,   20,   20,
            20,   -1,   21,   21,   21,   21,   21,   21,   21,   -1,
-           22,   22,
+           22,   22
     ];
 
     private $yybase = [
             7,    7,    7,    7,   16,   20,   13,   13,   13,   13,
-           13,    1,   -1,    9,   12,   14,   18,   17,   19,    4,
-           11,   22,   21,   15,   28,   29,   27,   26,    8,   23,
-           24,   25,   -3,   -3,   -3,   -3,   -3,   -3,
+           13,   -1,    1,    4,   12,   14,   18,   17,   19,    9,
+           11,   15,   21,   22,   29,   28,   23,   24,    8,   25,
+           26,   27,   -3,   -3,   -3,   -3,   -3,   -3
     ];
 
     private $yydefault = [
-           40,   40,   40,   40, 32767,   26, 32767, 32767, 32767, 32767,
-        32767, 32767, 32767, 32767, 32767, 32767, 32767, 32767,   15, 32767,
-        32767, 32767, 32767, 32767, 32767, 32767, 32767, 32767, 32767, 32767,
-        32767, 32767,
+           40,   40,   40,   40,32767,   26,32767,32767,32767,32767,
+        32767,32767,32767,32767,32767,32767,32767,32767,   15,32767,
+        32767,32767,32767,32767,32767,32767,32767,32767,32767,32767,
+        32767,32767
     ];
 
     private $yygoto = [
            26,   27,   21,   11,   24,   25,   30,   23,   31,   64,
-           63,    0,   60,   59,   61,   62,
+           60,    0,   59,   61,   62,   63
     ];
 
     private $yygcheck = [
             5,   10,    5,    5,    5,    5,    5,    1,    1,    1,
-           14,   -1,    7,    8,    9,   11,
+            7,   -1,    8,    9,   11,   14
     ];
 
     private $yygbase = [
-            0,    6,    0,    0,    0,   -4,    0,    7,    8,    9,
-           -3,   10,    0,    0,    5,
+            0,    6,    0,    0,    0,   -4,    0,    5,    7,    8,
+           -3,    9,    0,    0,   10
     ];
 
     private $yygdefault = [
         -32768,   17,   18,   19,   20,   50,   66,   67,   73,   68,
-           74,   69,   70,   12,   71,
+           74,   69,   70,   12,   71
     ];
 
     private $yylhs = [
@@ -151,7 +155,7 @@ abstract class AbstractGrammar
             4,    4,    4,    5,    5,    6,    6,    7,    8,    8,
             9,    9,   11,   11,   12,   12,   13,   13,   13,   13,
            13,   13,   13,   14,   10,   10,   10,   10,   10,   10,
-            1,    1,    1,
+            1,    1,    1
     ];
 
     private $yylen = [
@@ -159,7 +163,7 @@ abstract class AbstractGrammar
             1,    1,    1,    1,    1,    1,    3,    4,    1,    3,
             4,    4,    6,    6,    4,    6,    0,    1,    1,    1,
             1,    1,    3,    4,    1,    1,    1,    1,    1,    1,
-            0,    1,    1,
+            0,    1,    1
     ];
 
     public function __construct()
@@ -173,11 +177,11 @@ abstract class AbstractGrammar
         try {
             $this->yyparse();
         } catch (InvalidArgumentException $e) {
-            $e->setMessage(\sprintf("Expression \"%s\" is invalid.\n".$e->getMessage(), $this->buffer));
+            $e->setMessage(sprintf("Expression \"%s\" is invalid.\n".$e->getMessage(), $this->buffer));
             throw $e;
         }
 
-        return \reset($this->yyastk);
+        return reset($this->yyastk);
     }
 
     private function yyflush()
@@ -188,37 +192,38 @@ abstract class AbstractGrammar
     private function yytokname(int $n): string
     {
         switch ($n) {
-            case 0: return 'EOF';
-            case 256: return 'error';
-            case 257: return 'ALL';
-            case 258: return 'STRING';
-            case 259: return 'NOT';
-            case 260: return 'EQ';
-            case 261: return 'NEQ';
-            case 262: return 'LIKE';
-            case 263: return 'LT';
-            case 264: return 'LTE';
-            case 265: return 'GT';
-            case 266: return 'GTE';
-            case 267: return 'ORDER';
-            case 268: return 'RANGE';
-            case 269: return 'AND_OP';
-            case 270: return 'OR_OP';
-            case 271: return 'IN_OP';
-            case 272: return 'ORDER_DIRECTION';
-            case 273: return 'ENTRY';
-            case 274: return 'EXISTS';
+            case 0: return "EOF";
+            case 256: return "error";
+            case 257: return "ALL";
+            case 258: return "STRING";
+            case 259: return "NOT";
+            case 260: return "EQ";
+            case 261: return "NEQ";
+            case 262: return "LIKE";
+            case 263: return "LT";
+            case 264: return "LTE";
+            case 265: return "GT";
+            case 266: return "GTE";
+            case 267: return "ORDER";
+            case 268: return "RANGE";
+            case 269: return "AND_OP";
+            case 270: return "OR_OP";
+            case 271: return "IN_OP";
+            case 272: return "ORDER_DIRECTION";
+            case 273: return "ENTRY";
+            case 274: return "EXISTS";
             case 40: return "'('";
             case 41: return "')'";
             case 44: return "','";
             default:
-                return '???';
+                return "???";
         }
     }
 
+
     private function yyerror(): void
     {
-        $position = $this->__lex_buffer ? \strpos($this->buffer, $this->__lex_buffer) : \strlen($this->buffer);
+        $position = $this->__lex_buffer ? strpos($this->buffer, $this->__lex_buffer) : strlen($this->buffer);
 
         throw new SyntaxError($this->buffer, $position);
     }
@@ -237,7 +242,7 @@ abstract class AbstractGrammar
         $yysstk[$yysp] = 0;
         $yyerrflag = 0;
         while (true) {
-            if (0 == $this->yybase[$yystate]) {
+            if ($this->yybase[$yystate] == 0) {
                 $yyn = $this->yydefault[$yystate];
             } elseif ($yychar < 0) {
                 if (($yychar = $this->yylex()) <= 0) {
@@ -251,7 +256,7 @@ abstract class AbstractGrammar
                     || ($yystate < self::YY2TBLSTATE
                         && ($yyn = $this->yybase[$yystate + self::YYNLSTATES] + $yychar) >= 0
                         && $yyn < self::YYLAST && $this->yycheck[$yyn] == $yychar))
-                && self::YYDEFAULT != ($yyn = $this->yyaction[$yyn])) {
+                && ($yyn = $this->yyaction[$yyn]) != self::YYDEFAULT) {
                 /*
                  * >= YYNLSTATE: shift and reduce
                  * > 0: shift
@@ -261,14 +266,14 @@ abstract class AbstractGrammar
                  */
                 if ($yyn > 0) {
                     /* shift */
-                    ++$yysp;
+                    $yysp++;
 
                     $yysstk[$yysp] = $yystate = $yyn;
                     $yyastk[$yysp] = $this->yylval;
                     $yychar = -1;
 
                     if ($yyerrflag > 0) {
-                        --$yyerrflag;
+                        $yyerrflag--;
                     }
 
                     if ($yyn < self::YYNLSTATES) {
@@ -286,60 +291,59 @@ abstract class AbstractGrammar
 
             while (true) {
                 /* reduce/error */
-                if (0 == $yyn) {
+                if ($yyn == 0) {
                     /* accept */
                     $this->yyflush();
-
                     return 0;
-                } elseif (self::YYUNEXPECTED != $yyn) {
+                } elseif ($yyn != self::YYUNEXPECTED) {
                     /* reduce */
                     $yyl = $this->yylen[$yyn];
                     $n = $yysp - $yyl + 1;
                     $yyval = isset($yyastk[$n]) ? $yyastk[$n] : null;
                     /* Following line will be replaced by reduce actions */
-                    switch ($yyn) {
+                    switch($yyn) {
                         case 13:
-                             $yyval = $yyastk[$yysp - (1 - 1)]; break;
+                            { $yyval = $yyastk[$yysp - (1 - 1)]; } break;
                         case 14:
-                             $yyval = $yyastk[$yysp - (1 - 1)]; break;
+                            { $yyval = $yyastk[$yysp - (1 - 1)]; } break;
                         case 15:
-                             $yyval = $this->unaryExpression($yyastk[$yysp - (1 - 1)], null); break;
+                            { $yyval = $this->unaryExpression($yyastk[$yysp - (1 - 1)], null); } break;
                         case 16:
-                             $yyval = $this->unaryExpression($yyastk[$yysp - (3 - 1)], null); break;
+                            { $yyval = $this->unaryExpression($yyastk[$yysp - (3 - 1)], null); } break;
                         case 17:
-                             $yyval = $this->unaryExpression('not', $yyastk[$yysp - (4 - 3)]); break;
+                            { $yyval = $this->unaryExpression('not', $yyastk[$yysp - (4 - 3)]); } break;
                         case 18:
-                             $yyval = $this->unaryExpression('eq', Expression\Literal\LiteralExpression::create($yyastk[$yysp - (1 - 1)])); break;
+                            { $yyval = $this->unaryExpression('eq', Expression\Literal\LiteralExpression::create($yyastk[$yysp - (1 - 1)])); } break;
                         case 19:
-                             $yyval = $this->unaryExpression('eq', Expression\Literal\LiteralExpression::create($yyastk[$yysp - (3 - 2)])); break;
+                            { $yyval = $this->unaryExpression('eq', Expression\Literal\LiteralExpression::create($yyastk[$yysp - (3 - 2)])); } break;
                         case 20:
-                             $yyval = $this->unaryExpression($yyastk[$yysp - (4 - 1)], Expression\Literal\LiteralExpression::create($yyastk[$yysp - (4 - 3)])); break;
+                            { $yyval = $this->unaryExpression($yyastk[$yysp - (4 - 1)], Expression\Literal\LiteralExpression::create($yyastk[$yysp - (4 - 3)])); } break;
                         case 21:
-                             $yyval = $this->unaryExpression($yyastk[$yysp - (4 - 1)], $yyastk[$yysp - (4 - 3)]); break;
+                            { $yyval = $this->unaryExpression($yyastk[$yysp - (4 - 1)], $yyastk[$yysp - (4 - 3)]); } break;
                         case 22:
-                             $yyval = $this->binaryExpression($yyastk[$yysp - (6 - 1)], Expression\Literal\LiteralExpression::create($yyastk[$yysp - (6 - 3)]), $yyastk[$yysp - (6 - 5)]); break;
+                            { $yyval = $this->binaryExpression($yyastk[$yysp - (6 - 1)], Expression\Literal\LiteralExpression::create($yyastk[$yysp - (6 - 3)]), $yyastk[$yysp - (6 - 5)]); } break;
                         case 23:
-                             $yyval = $this->binaryExpression($yyastk[$yysp - (6 - 1)], Expression\Literal\LiteralExpression::create($yyastk[$yysp - (6 - 3)]), Expression\Literal\LiteralExpression::create($yyastk[$yysp - (6 - 5)])); break;
+                            { $yyval = $this->binaryExpression($yyastk[$yysp - (6 - 1)], Expression\Literal\LiteralExpression::create($yyastk[$yysp - (6 - 3)]), Expression\Literal\LiteralExpression::create($yyastk[$yysp - (6 - 5)])); } break;
                         case 24:
-                             $yyval = $this->orderExpression($yyastk[$yysp - (4 - 3)], 'asc'); break;
+                            { $yyval = $this->orderExpression($yyastk[$yysp - (4 - 3)], 'asc'); } break;
                         case 25:
-                             $yyval = $this->orderExpression($yyastk[$yysp - (6 - 3)], $yyastk[$yysp - (6 - 5)]); break;
+                            { $yyval = $this->orderExpression($yyastk[$yysp - (6 - 3)], $yyastk[$yysp - (6 - 5)]); } break;
                         case 26:
-                             $yyval = []; break;
+                            { $yyval = []; } break;
                         case 27:
-                             $yyval = [$yyastk[$yysp - (1 - 1)]]; break;
+                            { $yyval = [ $yyastk[$yysp - (1 - 1)] ]; } break;
                         case 28:
-                             $yyval = [$yyastk[$yysp - (1 - 1)]]; break;
+                            { $yyval = [ $yyastk[$yysp - (1 - 1)] ]; } break;
                         case 29:
-                             $yyval = [$yyastk[$yysp - (1 - 1)]]; break;
+                            { $yyval = [ $yyastk[$yysp - (1 - 1)] ]; } break;
                         case 30:
-                             $yyval = [$yyastk[$yysp - (1 - 1)]]; break;
+                            { $yyval = [ $yyastk[$yysp - (1 - 1)] ]; } break;
                         case 31:
-                             $yyval = [$yyastk[$yysp - (1 - 1)]]; break;
+                            { $yyval = [ $yyastk[$yysp - (1 - 1)] ]; } break;
                         case 32:
-                             $yyval[] = $yyastk[$yysp - (3 - 3)]; break;
+                            { $yyval[] = $yyastk[$yysp - (3 - 3)]; } break;
                         case 33:
-                             $yyval = $this->variadicExpression($yyastk[$yysp - (4 - 1)], $yyastk[$yysp - (4 - 3)]); break;
+                            { $yyval = $this->variadicExpression($yyastk[$yysp - (4 - 1)], $yyastk[$yysp - (4 - 3)]); } break;
                     }
 
                     /* Goto - shift nonterminal */
@@ -352,7 +356,7 @@ abstract class AbstractGrammar
                         $yystate = $this->yygdefault[$yyn];
                     }
 
-                    ++$yysp;
+                    $yysp++;
 
                     $yysstk[$yysp] = $yystate;
                     $yyastk[$yysp] = $yyval;
@@ -367,11 +371,11 @@ abstract class AbstractGrammar
                             $yyerrflag = 3;
                             /* Pop until error-expecting state uncovered */
 
-                            while (! (($yyn = $this->yybase[$yystate] + self::YYINTERRTOK) >= 0
-                                && $yyn < self::YYLAST && self::YYINTERRTOK == $this->yycheck[$yyn]
+                            while (!(($yyn = $this->yybase[$yystate] + self::YYINTERRTOK) >= 0
+                                && $yyn < self::YYLAST && $this->yycheck[$yyn] == self::YYINTERRTOK
                                 || ($yystate < self::YY2TBLSTATE
                                     && ($yyn = $this->yybase[$yystate + self::YYNLSTATES] + self::YYINTERRTOK) >= 0
-                                    && $yyn < self::YYLAST && self::YYINTERRTOK == $this->yycheck[$yyn]))) {
+                                    && $yyn < self::YYLAST && $this->yycheck[$yyn] == self::YYINTERRTOK))) {
                                 if ($yysp <= 0) {
                                     $this->yyflush();
 
@@ -386,7 +390,7 @@ abstract class AbstractGrammar
                             break;
 
                         case 3:
-                            if (0 == $yychar) {
+                            if ($yychar == 0) {
                                 $this->yyflush();
 
                                 return 1;
@@ -407,25 +411,26 @@ abstract class AbstractGrammar
         }
     }
 
+
     private $__lex_buffer = '';
     private const __QL_OPERATORS = [
-    self::ALL => 'all',
-    self::NOT => 'not',
-    self::EQ => 'eq',
-    self::NEQ => 'neq',
-    self::LIKE => 'like',
-    self::LTE => 'lte',
-    self::LT => 'lt',
-    self::GTE => 'gte',
-    self::GT => 'gt',
-    self::ORDER => 'order',
-    self::AND_OP => 'and',
-    self::OR_OP => 'or',
-    self::IN_OP => 'in',
-    self::RANGE => 'range',
-    self::ENTRY => 'entry',
-    self::EXISTS => 'exists',
-];
+        self::ALL => 'all',
+        self::NOT => 'not',
+        self::EQ => 'eq',
+        self::NEQ => 'neq',
+        self::LIKE => 'like',
+        self::LTE => 'lte',
+        self::LT => 'lt',
+        self::GTE => 'gte',
+        self::GT => 'gt',
+        self::ORDER => 'order',
+        self::AND_OP => 'and',
+        self::OR_OP => 'or',
+        self::IN_OP => 'in',
+        self::RANGE => 'range',
+        self::ENTRY => 'entry',
+        self::EXISTS => 'exists',
+    ];
     private const __ALL_OL_OPERATORS = 'all|not|eq|neq|like|lte|lt|gte|gt|order|and|or|in|range|entry|exists';
 
     private function yylex(): int

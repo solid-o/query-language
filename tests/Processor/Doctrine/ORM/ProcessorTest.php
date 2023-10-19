@@ -20,8 +20,11 @@ use Solido\QueryLanguage\Tests\Doctrine\ORM\FixturesTrait;
 use Solido\QueryLanguage\Tests\Fixtures\Entity\FooBar;
 use Solido\QueryLanguage\Tests\Fixtures\Entity\User;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalker;
+use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryBuilder;
+use Symfony\Component\Form\FormRegistry;
+use Symfony\Component\Form\ResolvedFormTypeFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Validator\ValidatorBuilder;
@@ -36,12 +39,13 @@ class ProcessorTest extends TestCase
 
     protected function setUp(): void
     {
-        $formFactory = (new FormFactoryBuilder(true))
-            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->getFormFactory();
+        $formRegistry = new FormRegistry(
+            [new ValidatorExtension((new ValidatorBuilder())->getValidator())],
+            new ResolvedFormTypeFactory()
+        );
 
         $this->dataMapperFactory = new DataMapperFactory();
-        $this->dataMapperFactory->setFormFactory($formFactory);
+        $this->dataMapperFactory->setFormRegistry($formRegistry);
 
         $this->processor = new Processor(
             self::$entityManager->getRepository(User::class)->createQueryBuilder('u'),
@@ -87,7 +91,7 @@ class ProcessorTest extends TestCase
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
         iterator_to_array($itr);
 
-        self::assertSame('SELECT u0_.id AS id_0, u0_.name AS name_1, u0_.nameLength AS nameLength_2, u0_.foobar_id AS foobar_id_3 FROM User u0_ WHERE 1 = 1 AND u0_.foobar_id = ?', self::$queryLogs[0]['sql']);
+        self::assertSame('SELECT u0_.id AS id_0, u0_.name AS name_1, u0_.nameLength AS nameLength_2, u0_.foobar_id AS foobar_id_3 FROM User u0_ WHERE 1 = 1 AND u0_.foobar_id = ? LIMIT 10', self::$queryLogs[0]['sql']);
         self::assertSame(12, self::$queryLogs[0]['params'][1]);
 
         $this->setUp();
@@ -96,7 +100,7 @@ class ProcessorTest extends TestCase
 
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
         iterator_to_array($itr);
-        self::assertSame('SELECT u0_.id AS id_0, u0_.name AS name_1, u0_.nameLength AS nameLength_2, u0_.foobar_id AS foobar_id_3 FROM User u0_ WHERE 1 = 1 AND u0_.foobar_id IS NULL', self::$queryLogs[1]['sql']);
+        self::assertSame('SELECT u0_.id AS id_0, u0_.name AS name_1, u0_.nameLength AS nameLength_2, u0_.foobar_id AS foobar_id_3 FROM User u0_ WHERE 1 = 1 AND u0_.foobar_id IS NULL LIMIT 10', self::$queryLogs[1]['sql']);
     }
 
     public function testManyToManyRelationFieldWorks(): void
@@ -107,7 +111,7 @@ class ProcessorTest extends TestCase
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
         iterator_to_array($itr);
 
-        self::assertSame('SELECT DISTINCT u0_.id AS id_0, u0_.name AS name_1, u0_.nameLength AS nameLength_2, u0_.foobar_id AS foobar_id_3 FROM User u0_ INNER JOIN user_group u2_ ON u0_.id = u2_.user_id INNER JOIN u_group u1_ ON u1_.id = u2_.group_id AND (u1_.id = ?) WHERE 1 = 1', self::$queryLogs[0]['sql']);
+        self::assertSame('SELECT DISTINCT u0_.id AS id_0, u0_.name AS name_1, u0_.nameLength AS nameLength_2, u0_.foobar_id AS foobar_id_3 FROM User u0_ INNER JOIN user_group u2_ ON u0_.id = u2_.user_id INNER JOIN u_group u1_ ON u1_.id = u2_.group_id AND (u1_.id = ?) WHERE 1 = 1 LIMIT 10', self::$queryLogs[0]['sql']);
         self::assertSame(1, self::$queryLogs[0]['params'][1]);
     }
 
@@ -230,25 +234,6 @@ class ProcessorTest extends TestCase
         self::assertCount($count, iterator_to_array($itr));
     }
 
-    public function testContinuationTokenCouldBeDisabled(): void
-    {
-        $this->processor = new Processor(
-            self::$entityManager->getRepository(User::class)->createQueryBuilder('u'),
-            $this->dataMapperFactory,
-            [
-                'default_order' => 'name, desc',
-                'order_field' => 'order',
-                'continuation_token' => false,
-            ],
-        );
-
-        $this->processor->addField('name');
-        $this->processor->setDefaultPageSize(3);
-        $itr = $this->processor->processRequest(new Request([]));
-
-        self::assertInstanceOf(EntityIterator::class, $itr);
-    }
-
     public function testCustomFieldWorks(): void
     {
         $this->processor->addField('foobar', new class(self::$entityManager) implements FieldInterface {
@@ -269,7 +254,7 @@ class ProcessorTest extends TestCase
                     ->setParameter('foobar', $foobar);
             }
 
-            public function getValidationWalker()
+            public function getValidationWalker(): ValidationWalkerInterface
             {
                 return new ValidationWalker();
             }
@@ -309,7 +294,7 @@ class ProcessorTest extends TestCase
                 return ['foobar', 'asc'];
             }
 
-            public function getValidationWalker()
+            public function getValidationWalker(): ValidationWalkerInterface
             {
                 return new ValidationWalker();
             }

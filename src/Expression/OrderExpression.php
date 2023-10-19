@@ -17,15 +17,9 @@ use function strtolower;
 
 final class OrderExpression implements ExpressionInterface
 {
-    private string $field;
-    /** @phpstan-var 'asc'|'desc' */
-    private string $direction;
-
     /** @phpstan-param 'asc'|'desc' $direction */
-    public function __construct(string $field, string $direction)
+    public function __construct(private string $field, private string $direction)
     {
-        $this->field = $field;
-        $this->direction = $direction;
     }
 
     /**
@@ -72,10 +66,7 @@ final class OrderExpression implements ExpressionInterface
         return '$order(' . $this->field . ', ' . $this->direction . ')';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function dispatch(TreeWalkerInterface $treeWalker)
+    public function dispatch(TreeWalkerInterface $treeWalker): mixed
     {
         return $treeWalker->walkOrder($this->field, $this->direction);
     }

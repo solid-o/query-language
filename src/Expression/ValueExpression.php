@@ -10,31 +10,23 @@ class ValueExpression implements ExpressionInterface
 {
     /**
      * The value represented by the literal expression.
-     *
-     * @var mixed
      */
-    protected $value;
+    protected mixed $value;
 
-    /** @param mixed $value */
-    protected function __construct($value)
+    protected function __construct(mixed $value)
     {
         $this->value = $value;
     }
 
     /**
      * Gets the literal expression value.
-     *
-     * @return mixed
      */
-    public function getValue()
+    public function getValue(): mixed
     {
         return $this->value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function dispatch(TreeWalkerInterface $treeWalker)
+    public function dispatch(TreeWalkerInterface $treeWalker): mixed
     {
         return $this->getValue();
     }
@@ -47,11 +39,9 @@ class ValueExpression implements ExpressionInterface
     /**
      * Creates a new value expression.
      *
-     * @param mixed $value
-     *
      * @return ValueExpression
      */
-    public static function create($value): self
+    public static function create(mixed $value): self
     {
         return new self($value);
     }

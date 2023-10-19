@@ -13,13 +13,8 @@ final class EntryExpression implements ExpressionInterface
 {
     use ExpressionTrait;
 
-    private LiteralExpression $key;
-    private ExpressionInterface $value;
-
-    public function __construct(LiteralExpression $key, ExpressionInterface $value)
+    public function __construct(private LiteralExpression $key, private ExpressionInterface $value)
     {
-        $this->key = $key;
-        $this->value = $value;
     }
 
     public static function create(ExpressionInterface $key, ExpressionInterface $value): self
@@ -44,10 +39,7 @@ final class EntryExpression implements ExpressionInterface
         return '$entry(' . $this->key . ', ' . $this->value . ')';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function dispatch(TreeWalkerInterface $treeWalker)
+    public function dispatch(TreeWalkerInterface $treeWalker): mixed
     {
         return $treeWalker->walkEntry((string) $this->key, $this->value);
     }

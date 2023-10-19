@@ -14,67 +14,65 @@ use Solido\QueryLanguage\Expression\ValueExpression;
  */
 class InvalidWalker extends ValidationWalker
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function walkLiteral(LiteralExpression $expression)
+    public function walkLiteral(LiteralExpression $expression): mixed
     {
         $this->addViolation('Invalid operation');
+
+        return null;
+    }
+
+    public function walkComparison(string $operator, ValueExpression $expression): mixed
+    {
+        $this->addViolation('Invalid operation');
+
+        return null;
+    }
+
+    public function walkAll(): mixed
+    {
+        $this->addViolation('Invalid operation');
+
+        return null;
+    }
+
+    public function walkOrder(string $field, string $direction): mixed
+    {
+        $this->addViolation('Invalid operation');
+
+        return null;
+    }
+
+    public function walkNot(ExpressionInterface $expression): mixed
+    {
+        $this->addViolation('Invalid operation');
+
+        return null;
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function walkComparison(string $operator, ValueExpression $expression)
+    public function walkAnd(array $arguments): mixed
     {
         $this->addViolation('Invalid operation');
+
+        return null;
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function walkAll()
+    public function walkOr(array $arguments): mixed
     {
         $this->addViolation('Invalid operation');
+
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkOrder(string $field, string $direction)
+    public function walkEntry(string $key, ExpressionInterface $expression): mixed
     {
         $this->addViolation('Invalid operation');
-    }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkNot(ExpressionInterface $expression)
-    {
-        $this->addViolation('Invalid operation');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function walkAnd(array $arguments)
-    {
-        $this->addViolation('Invalid operation');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function walkOr(array $arguments)
-    {
-        $this->addViolation('Invalid operation');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function walkEntry(string $key, ExpressionInterface $expression)
-    {
-        $this->addViolation('Invalid operation');
+        return null;
     }
 }

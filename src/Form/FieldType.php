@@ -12,15 +12,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FieldType extends AbstractType
 {
-    private ?TranslatorInterface $translator;
-
-    public function __construct(?TranslatorInterface $translator = null)
+    public function __construct(private TranslatorInterface|null $translator = null)
     {
-        $this->translator = $translator;
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -29,7 +26,7 @@ class FieldType extends AbstractType
             ->addViewTransformer(new DataTransformer\StringToExpresionTransformer());
     }
 
-    public function getParent(): ?string
+    public function getParent(): string|null
     {
         return TextType::class;
     }

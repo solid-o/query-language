@@ -9,6 +9,8 @@ use Solido\Common\AdapterFactory;
 use Solido\Common\AdapterFactoryInterface;
 use Solido\DataMapper\DataMapperFactory;
 use Solido\DataMapper\Exception\MappingErrorException;
+use Solido\Pagination\PageNumber;
+use Solido\Pagination\PageOffset;
 use Solido\Pagination\PageToken;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Form\DTO\Query;
@@ -31,15 +33,13 @@ abstract class AbstractProcessor
 
     /** @var mixed[] */
     protected array $options;
-    private DataMapperFactory $dataMapperFactory;
     private AdapterFactoryInterface $adapterFactory;
 
     /** @param mixed[] $options */
-    public function __construct(DataMapperFactory $dataMapperFactory, array $options = [])
+    public function __construct(private readonly DataMapperFactory $dataMapperFactory, array $options = [])
     {
         $this->options = $this->resolveOptions($options);
         $this->fields = [];
-        $this->dataMapperFactory = $dataMapperFactory;
         $this->adapterFactory = new AdapterFactory();
     }
 
@@ -51,7 +51,7 @@ abstract class AbstractProcessor
     /**
      * Sets the default page size (will be used if limit is disabled or not passed by the user).
      */
-    public function setDefaultPageSize(?int $size): void
+    public function setDefaultPageSize(int|null $size): void
     {
         $this->options['default_page_size'] = $size;
     }
@@ -59,11 +59,11 @@ abstract class AbstractProcessor
     /**
      * Adds a field to this list processor.
      *
-     * @param array<null|string|callable>|FieldInterface $options
+     * @param array<string|callable|null>|FieldInterface $options
      *
      * @return $this
      */
-    abstract public function addField(string $name, $options = []): self;
+    abstract public function addField(string $name, array|FieldInterface $options = []): self;
 
     /**
      * Binds and validates the request to the internal Query object.
@@ -99,18 +99,21 @@ abstract class AbstractProcessor
 
         $range = $adapter->getHeader('Range')[0] ?? null;
         if (
+            $dto->page === null &&
             $this->options['range-header'] && ! empty($range) &&
-            preg_match('/^(units=(?P<start>\d+)-(?P<end>\d+)|after=(?P<token>[^\s,.]+))$/', $range, $matches)
+            preg_match('/^(units=(?P<start>\d+)-(?P<end>\d+)|page=(?P<page>\d+)|after=(?P<token>[^\s,.]+))$/', $range, $matches)
         ) {
             if (
-                $dto->skip === null && $dto->limit === null &&
+                $dto->limit === null &&
                 isset($matches['start'], $matches['end']) &&
                 $matches['start'] !== '' && $matches['end'] !== ''
             ) {
-                $dto->skip = (int) $matches['start'];
+                $dto->page = new PageOffset((int) $matches['start']);
                 $dto->limit = ((int) $matches['end']) - ((int) $matches['start']) + 1;
-            } elseif ($dto->pageToken === null && isset($matches['token']) && PageToken::isValid($matches['token'])) {
-                $dto->pageToken = PageToken::parse($matches['token']);
+            } elseif (isset($matches['page']) && $matches['page'] !== '') {
+                $dto->page = new PageNumber((int) $matches['page']);
+            } elseif (isset($matches['token']) && PageToken::isValid($matches['token'])) {
+                $dto->page = PageToken::parse($matches['token']);
             }
         }
 
@@ -138,8 +141,12 @@ abstract class AbstractProcessor
      * @return array<string, string>
      * @phpstan-return array<string, 'asc'|'desc'>
      */
-    protected function parseOrderings(object $queryBuilder, OrderExpression $ordering): array
+    protected function parseOrderings(object $queryBuilder, OrderExpression|null $ordering): array
     {
+        if ($ordering === null) {
+            return [];
+        }
+
         $field = $this->fields[$ordering->getField()];
         if (! ($field instanceof OrderableFieldInterface)) {
             return [];
@@ -166,7 +173,7 @@ abstract class AbstractProcessor
         $checksumField = $this->getIdentifierFieldNames()[0];
         if (isset($this->options['continuation_token']['checksum_field'])) {
             $checksumField = $this->options['continuation_token']['checksum_field'];
-            $checksumField = $this->fields[$checksumField]->fieldName;
+            $checksumField = $this->fields[$checksumField]->fieldName; /* @phpstan-ignore-line */
         }
 
         return $checksumField;
@@ -227,7 +234,7 @@ abstract class AbstractProcessor
 
                 return $value;
             })
-            ->setNormalizer('default_order', static function (Options $options, $value): ?OrderExpression {
+            ->setNormalizer('default_order', static function (Options $options, $value): OrderExpression|null {
                 if (empty($value)) {
                     return null;
                 }

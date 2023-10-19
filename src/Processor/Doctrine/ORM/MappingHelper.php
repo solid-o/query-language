@@ -9,9 +9,9 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use function array_key_last;
 use function assert;
 use function explode;
-use function Safe\substr;
 use function strlen;
 use function strrev;
+use function substr;
 use function substr_count;
 
 final class MappingHelper

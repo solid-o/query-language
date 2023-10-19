@@ -22,20 +22,14 @@ class DiscriminatorWalker extends DqlWalker
         $this->rootEntity = $entityManager->getClassMetadata($this->queryBuilder->getRootEntities()[0]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkLiteral(LiteralExpression $expression)
+    public function walkLiteral(LiteralExpression $expression): mixed
     {
         $value = $expression->getValue();
 
         return $this->rootEntity->discriminatorMap[$value];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkComparison(string $operator, ValueExpression $expression)
+    public function walkComparison(string $operator, ValueExpression $expression): mixed
     {
         return new Expr\Comparison($this->field, 'INSTANCE OF', $expression->dispatch($this));
     }

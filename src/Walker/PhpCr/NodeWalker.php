@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Walker\PhpCr;
 
+use DateTime;
 use Doctrine\ODM\PHPCR\Query\Builder\AbstractNode;
 use Doctrine\ODM\PHPCR\Query\Builder\ConstraintAndx;
 use Doctrine\ODM\PHPCR\Query\Builder\ConstraintChild;
@@ -18,7 +19,6 @@ use Doctrine\ODM\PHPCR\Query\Builder\OrderByAdd;
 use Doctrine\ODM\PHPCR\Query\Builder\Ordering;
 use InvalidArgumentException;
 use PHPCR\Query\QOM\QueryObjectModelConstantsInterface as QOMConstants;
-use Safe\DateTime;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use Solido\QueryLanguage\Expression\Literal\NullExpression;
@@ -39,19 +39,11 @@ class NodeWalker extends AbstractWalker
         'like' => QOMConstants::JCR_OPERATOR_LIKE,
     ];
 
-    private string $field;
-    private ?string $fieldType;
-
-    public function __construct(string $field, ?string $fieldType = null)
+    public function __construct(private readonly string $field, private readonly string|null $fieldType = null)
     {
-        $this->field = $field;
-        $this->fieldType = $fieldType;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkLiteral(LiteralExpression $expression)
+    public function walkLiteral(LiteralExpression $expression): mixed
     {
         $value = $expression->getValue();
         if ($expression instanceof NullExpression) {
@@ -65,10 +57,7 @@ class NodeWalker extends AbstractWalker
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkComparison(string $operator, ValueExpression $expression)
+    public function walkComparison(string $operator, ValueExpression $expression): mixed
     {
         if ($this->fieldType === 'parent') {
             if ($operator !== '=') {
@@ -108,18 +97,12 @@ class NodeWalker extends AbstractWalker
         return $comparison;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkAll()
+    public function walkAll(): mixed
     {
-        // Do nothing.
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkOrder(string $field, string $direction)
+    public function walkOrder(string $field, string $direction): mixed
     {
         $left = function (AbstractNode $parent) use ($field): AbstractNode {
             return $this->fieldType === 'nodename' ?
@@ -135,10 +118,7 @@ class NodeWalker extends AbstractWalker
         return $node;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkNot(ExpressionInterface $expression)
+    public function walkNot(ExpressionInterface $expression): mixed
     {
         $node = new ConstraintNot();
         $node->addChild($expression->dispatch($this));
@@ -147,9 +127,9 @@ class NodeWalker extends AbstractWalker
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function walkAnd(array $arguments)
+    public function walkAnd(array $arguments): mixed
     {
         $node = new ConstraintAndx();
         foreach ($arguments as $argument) {
@@ -160,9 +140,9 @@ class NodeWalker extends AbstractWalker
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function walkOr(array $arguments)
+    public function walkOr(array $arguments): mixed
     {
         $node = new ConstraintOrx();
         foreach ($arguments as $argument) {
@@ -172,10 +152,7 @@ class NodeWalker extends AbstractWalker
         return $node;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkEntry(string $key, ExpressionInterface $expression)
+    public function walkEntry(string $key, ExpressionInterface $expression): mixed
     {
         $walker = new NodeWalker($this->field . '.' . $key);
 

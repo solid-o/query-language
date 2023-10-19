@@ -13,85 +13,78 @@ use function in_array;
 
 class OrderWalker extends ValidationWalker
 {
-    /** @var string[] */
-    private array $orderableFields;
-
     /** @param string[] $orderableFields */
-    public function __construct(array $orderableFields)
+    public function __construct(private readonly array $orderableFields)
     {
         parent::__construct();
-
-        $this->orderableFields = $orderableFields;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkLiteral(LiteralExpression $expression)
+    public function walkLiteral(LiteralExpression $expression): mixed
     {
         $this->addViolation('Invalid operation');
+
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkComparison(string $operator, ValueExpression $expression)
+    public function walkComparison(string $operator, ValueExpression $expression): mixed
     {
         $this->addViolation('Invalid operation');
+
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkAll()
+    public function walkAll(): mixed
     {
         $this->addViolation('Invalid operation');
+
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkOrder(string $field, string $direction)
+    public function walkOrder(string $field, string $direction): mixed
     {
         if (in_array($field, $this->orderableFields, true)) {
-            return;
+            return null;
         }
 
         $this->addViolation('Value "{{ value }}" is not allowed. Must be one of "{{ allowed_values }}".', [
             '{{ value }}' => $field,
             '{{ allowed_values }}' => implode('", "', $this->orderableFields),
         ]);
+
+        return null;
+    }
+
+    public function walkNot(ExpressionInterface $expression): mixed
+    {
+        $this->addViolation('Invalid operation');
+
+        return null;
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function walkNot(ExpressionInterface $expression)
+    public function walkAnd(array $arguments): mixed
     {
         $this->addViolation('Invalid operation');
+
+        return null;
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function walkAnd(array $arguments)
+    public function walkOr(array $arguments): mixed
     {
         $this->addViolation('Invalid operation');
+
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkOr(array $arguments)
+    public function walkEntry(string $key, ExpressionInterface $expression): mixed
     {
         $this->addViolation('Invalid operation');
-    }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkEntry(string $key, ExpressionInterface $expression)
-    {
-        $this->addViolation('Invalid operation');
+        return null;
     }
 }

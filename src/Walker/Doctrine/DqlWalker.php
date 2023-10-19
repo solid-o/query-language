@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Walker\Doctrine;
 
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\QueryBuilder;
-use Safe\DateTime;
-use Safe\DateTimeImmutable;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use Solido\QueryLanguage\Expression\Literal\NullExpression;
@@ -18,6 +18,8 @@ use Solido\QueryLanguage\Expression\ValueExpression;
 use Solido\QueryLanguage\Walker\AbstractWalker;
 
 use function array_map;
+use function assert;
+use function is_string;
 use function mb_strtolower;
 use function Safe\preg_replace;
 
@@ -32,21 +34,14 @@ class DqlWalker extends AbstractWalker
         'like' => 'LIKE',
     ];
 
-    protected QueryBuilder $queryBuilder;
-    protected string $field;
-    private ?string $fieldType;
-
-    public function __construct(QueryBuilder $queryBuilder, string $field, ?string $fieldType = null)
-    {
-        $this->field = $field;
-        $this->queryBuilder = $queryBuilder;
-        $this->fieldType = $fieldType;
+    public function __construct(
+        protected QueryBuilder $queryBuilder,
+        protected string $field,
+        private readonly string|null $fieldType = null,
+    ) {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkLiteral(LiteralExpression $expression)
+    public function walkLiteral(LiteralExpression $expression): mixed
     {
         $value = $expression->getValue();
         if ($expression instanceof NullExpression) {
@@ -67,10 +62,7 @@ class DqlWalker extends AbstractWalker
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkComparison(string $operator, ValueExpression $expression)
+    public function walkComparison(string $operator, ValueExpression $expression): mixed
     {
         $field = $this->field;
         if ($operator === 'like') {
@@ -88,34 +80,25 @@ class DqlWalker extends AbstractWalker
         return new Expr\Comparison($field, self::COMPARISON_MAP[$operator], ':' . $parameterName);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkAll()
+    public function walkAll(): mixed
     {
-        // Do nothing.
+        return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkOrder(string $field, string $direction)
+    public function walkOrder(string $field, string $direction): mixed
     {
         return new Expr\OrderBy($field, $direction);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkNot(ExpressionInterface $expression)
+    public function walkNot(ExpressionInterface $expression): mixed
     {
         return new Expr\Func('NOT', [$expression->dispatch($this)]);
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function walkAnd(array $arguments)
+    public function walkAnd(array $arguments): mixed
     {
         return new Expr\Andx(array_map(function (ExpressionInterface $expression) {
             return $expression->dispatch($this);
@@ -123,19 +106,16 @@ class DqlWalker extends AbstractWalker
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function walkOr(array $arguments)
+    public function walkOr(array $arguments): mixed
     {
         return new Expr\Orx(array_map(function (ExpressionInterface $expression) {
             return $expression->dispatch($this);
         }, $arguments));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function walkEntry(string $key, ExpressionInterface $expression)
+    public function walkEntry(string $key, ExpressionInterface $expression): mixed
     {
         $walker = new DqlWalker($this->queryBuilder, $this->field . '.' . $key);
 
@@ -148,10 +128,12 @@ class DqlWalker extends AbstractWalker
     protected function generateParameterName(): string
     {
         $params = $this->queryBuilder->getParameters();
-        $underscoreField = mb_strtolower(
-            preg_replace('/(?|(?<=[a-z0-9])([A-Z])|(?<=[A-Z]{2})([a-z]))/', '_$1', $this->field),
-        );
+        $underscoreField = mb_strtolower(preg_replace('/(?|(?<=[a-z0-9])([A-Z])|(?<=[A-Z]{2})([a-z]))/', '_$1', $this->field)); /* @phpstan-ignore-line */
+
         $parameterName = $origParamName = preg_replace('/\W+/', '_', $underscoreField);
+
+        assert(is_string($origParamName));
+        assert(is_string($parameterName));
 
         $filter = static function (Parameter $parameter) use (&$parameterName): bool {
             return $parameter->getName() === $parameterName;

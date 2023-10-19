@@ -14,7 +14,7 @@ use function is_string;
 class PageTokenTransformer implements DataTransformerInterface
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function transform($value): string
     {
@@ -34,9 +34,9 @@ class PageTokenTransformer implements DataTransformerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    public function reverseTransform($value): ?PageToken
+    public function reverseTransform($value): PageToken|null
     {
         if ($value === null || $value === '') {
             return null;

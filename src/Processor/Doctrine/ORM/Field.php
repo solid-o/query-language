@@ -15,6 +15,7 @@ use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\Doctrine\DiscriminatorWalker;
 use Solido\QueryLanguage\Walker\Doctrine\DqlWalker;
 use Solido\QueryLanguage\Walker\Validation\EnumWalker;
+use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 
 use function array_keys;
 use function count;
@@ -23,11 +24,7 @@ use function is_string;
 /** @internal */
 class Field implements FieldInterface
 {
-    private string $rootAlias;
     private string $fieldType;
-    private EntityManagerInterface $entityManager;
-    public string $fieldName;
-
     /**
      * @var array<string, mixed>
      * @phpstan-var array<array{fieldName: string, targetEntity: string}>
@@ -46,14 +43,11 @@ class Field implements FieldInterface
     public bool $discriminator;
 
     public function __construct(
-        string $fieldName,
-        string $rootAlias,
+        public string $fieldName,
+        private readonly string $rootAlias,
         ClassMetadata $rootEntity,
-        EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
     ) {
-        $this->fieldName = $fieldName;
-        $this->rootAlias = $rootAlias;
-        $this->entityManager = $entityManager;
         $this->validationWalker = null;
         $this->customWalker = null;
         $this->discriminator = false;
@@ -163,10 +157,7 @@ class Field implements FieldInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getValidationWalker()
+    public function getValidationWalker(): ValidationWalkerInterface|string|callable|null
     {
         return $this->validationWalker;
     }
@@ -254,7 +245,7 @@ class Field implements FieldInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getOrder(object $queryBuilder, OrderExpression $orderExpression): array
     {

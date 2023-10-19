@@ -15,6 +15,7 @@ use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\PhpCr\NodeWalker;
+use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 
 use function assert;
 use function count;
@@ -23,7 +24,6 @@ use function is_string;
 /** @internal */
 class Field implements FieldInterface
 {
-    private string $rootAlias;
     private string $fieldType;
 
     /**
@@ -31,8 +31,6 @@ class Field implements FieldInterface
      * @phpstan-var array<array{id?: bool, fieldName: string, type: string, targetDocument?: string, sourceDocument?: string}>
      */
     private array $associations;
-
-    public string $fieldName;
 
     /**
      * @var array<string, string|bool>
@@ -46,17 +44,12 @@ class Field implements FieldInterface
     /** @var string|callable|null */
     public $customWalker;
 
-    private DocumentManagerInterface $documentManager;
-
     public function __construct(
-        string $fieldName,
-        string $rootAlias,
+        public string $fieldName,
+        private readonly string $rootAlias,
         ClassMetadata $rootEntity,
-        DocumentManagerInterface $documentManager
+        private readonly DocumentManagerInterface $documentManager,
     ) {
-        $this->fieldName = $fieldName;
-        $this->rootAlias = $rootAlias;
-        $this->documentManager = $documentManager;
         $this->validationWalker = null;
         $this->customWalker = null;
 
@@ -92,10 +85,7 @@ class Field implements FieldInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getValidationWalker()
+    public function getValidationWalker(): ValidationWalkerInterface|string|callable|null
     {
         return $this->validationWalker;
     }
@@ -231,7 +221,7 @@ class Field implements FieldInterface
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getOrder(object $queryBuilder, OrderExpression $orderExpression): array
     {

@@ -12,14 +12,14 @@ use Symfony\Component\Form\FormBuilderInterface;
 class PageTokenType extends AbstractType
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addViewTransformer(new PageTokenTransformer());
     }
 
-    public function getParent(): ?string
+    public function getParent(): string|null
     {
         return TextType::class;
     }

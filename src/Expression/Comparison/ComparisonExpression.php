@@ -21,8 +21,7 @@ abstract class ComparisonExpression implements ComparisonExpressionInterface
      */
     protected string $operator;
 
-    /** @param mixed|LiteralExpression $value */
-    public function __construct($value, string $operator)
+    public function __construct(mixed $value, string $operator)
     {
         assert($value instanceof LiteralExpression, self::getShortName() . ' accepts only literal expressions as argument #1. Passed ' . $value);
 
@@ -32,10 +31,8 @@ abstract class ComparisonExpression implements ComparisonExpressionInterface
 
     /**
      * Gets the comparison value.
-     *
-     * @return mixed
      */
-    public function getValue()
+    public function getValue(): mixed
     {
         return $this->value;
     }
@@ -48,10 +45,7 @@ abstract class ComparisonExpression implements ComparisonExpressionInterface
         return $this->operator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function dispatch(TreeWalkerInterface $treeWalker)
+    public function dispatch(TreeWalkerInterface $treeWalker): mixed
     {
         return $treeWalker->walkComparison($this->operator, $this->value);
     }

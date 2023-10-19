@@ -17,9 +17,12 @@ use Solido\QueryLanguage\Processor\Doctrine\DBAL\Processor;
 use Solido\QueryLanguage\Tests\Doctrine\ORM\FixturesTrait;
 use Solido\QueryLanguage\Tests\Fixtures\Entity\FooBar;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalker;
+use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryBuilder;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormRegistry;
+use Symfony\Component\Form\ResolvedFormTypeFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Validator\ValidatorBuilder;
@@ -34,12 +37,13 @@ class ProcessorTest extends TestCase
 
     protected function setUp(): void
     {
-        $formFactory = (new FormFactoryBuilder(true))
-            ->addExtension(new ValidatorExtension((new ValidatorBuilder())->getValidator()))
-            ->getFormFactory();
+        $formRegistry = new FormRegistry(
+            [new ValidatorExtension((new ValidatorBuilder())->getValidator())],
+            new ResolvedFormTypeFactory()
+        );
 
         $this->dataMapperFactory = new DataMapperFactory();
-        $this->dataMapperFactory->setFormFactory($formFactory);
+        $this->dataMapperFactory->setFormRegistry($formRegistry);
 
         $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
         $queryBuilder
@@ -172,31 +176,6 @@ class ProcessorTest extends TestCase
         self::assertInstanceOf(PagerIterator::class, $itr);
     }
 
-    public function testContinuationTokenCouldBeDisabled(): void
-    {
-        $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();
-        $queryBuilder
-            ->select('id', 'name', 'nameLength')
-            ->from('user', 'u');
-
-        $this->processor = new Processor(
-            $queryBuilder,
-            $this->dataMapperFactory,
-            [
-                'default_order' => 'name, desc',
-                'order_field' => 'order',
-                'continuation_token' => false,
-                'identifiers' => ['id'],
-            ],
-        );
-
-        $this->processor->addField('name');
-        $this->processor->setDefaultPageSize(3);
-        $itr = $this->processor->processRequest(new Request([]));
-
-        self::assertInstanceOf(RowIterator::class, $itr);
-    }
-
     public function testCustomFieldWorks(): void
     {
         $this->processor->addField('foobar', new class(self::$entityManager) implements FieldInterface {
@@ -216,7 +195,7 @@ class ProcessorTest extends TestCase
                     ->setParameter('foobar', $foobar->id);
             }
 
-            public function getValidationWalker()
+            public function getValidationWalker(): ValidationWalkerInterface
             {
                 return new ValidationWalker();
             }
