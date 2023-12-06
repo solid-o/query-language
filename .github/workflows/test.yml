@@ -23,7 +23,7 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php_version }}
-                  tools: 'infection'
+                  tools: infection
                   ini-values: zend.assertions=1,assert.exception=1,assert.active=1
                   coverage: pcov
 
@@ -35,9 +35,9 @@ jobs:
 
             - name: Set repository name
               id: repository-name
-              run: >
-                  echo "REPOSITORY_NAME=$(echo $GITHUB_REPOSITORY | tr '/' '_')" >> "$GITHUB_OUTPUT" ;
-                  echo "REPOSITORY_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)" >> "$GITHUB_OUTPUT"
+              run: |
+                  echo "REPOSITORY_NAME=$(echo $GITHUB_REPOSITORY | tr '/' '_')" >> $GITHUB_OUTPUT
+                  echo "REPOSITORY_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)" >> $GITHUB_OUTPUT
             - name: fix code coverage paths
               working-directory: ./phpunit
               run: |
@@ -45,7 +45,7 @@ jobs:
                   sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace/@g' junit.xml
 
             - name: SonarCloud Scan
-              uses: sonarsource/sonarcloud-github-action@v1.5
+              uses: sonarsource/sonarcloud-github-action@master
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
