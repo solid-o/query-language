@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Walker\Validation;
 
+use BackedEnum;
 use MyCLabs\Enum\Enum;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use TypeError;
+use UnitEnum;
 
+use function array_map;
 use function class_exists;
 use function get_debug_type;
 use function implode;
@@ -28,8 +31,12 @@ class EnumWalker extends ValidationWalker
     {
         parent::__construct();
 
-        if (is_string($values) && class_exists($values) && is_subclass_of($values, Enum::class, true)) {
-            $values = $values::toArray();
+        if (is_string($values) && class_exists($values)) {
+            if (is_subclass_of($values, Enum::class, true)) {
+                $values = $values::toArray();
+            } elseif (is_subclass_of($values, UnitEnum::class, true)) {
+                $values = array_map(static fn ($case) => $case instanceof BackedEnum ? $case->value : $case->name, $values::cases());
+            }
         }
 
         if (! is_array($values)) {
@@ -43,7 +50,7 @@ class EnumWalker extends ValidationWalker
     {
         $expressionValue = $expression->getValue();
         if (in_array($expressionValue, $this->values, true)) {
-            return;
+            return null;
         }
 
         $this->addViolation('Value "{{ value }}" is not allowed. Must be one of "{{ allowed_values }}".', [
