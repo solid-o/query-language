@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Processor\Doctrine\ORM;
 
+use ArrayAccess;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\Expr\Join;
@@ -32,7 +33,7 @@ class Field implements FieldInterface
     public array $associations;
 
     /** @var array<string, mixed> */
-    public array $mapping;
+    public ArrayAccess|array $mapping;
 
     /** @var string|callable|null */
     public $validationWalker;
