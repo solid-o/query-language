@@ -40,7 +40,7 @@ class GrammarTest extends TestCase
         $this->assertDumpEquals($this->getDump($expected), $this->grammar->parse($query));
     }
 
-    public function provideExpressions(): iterable
+    public static function provideExpressions(): iterable
     {
         yield ['$all', new Expression\AllExpression()];
         yield [
@@ -160,7 +160,7 @@ class GrammarTest extends TestCase
         $this->grammar->parse($query);
     }
 
-    public function provideInvalidExpressions(): iterable
+    public static function provideInvalidExpressions(): iterable
     {
         yield ['$eq'];
         yield ['$neq'];

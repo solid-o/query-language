@@ -29,7 +29,7 @@ final class AndExpression implements LogicalExpressionInterface
     public static function create(array $arguments): ExpressionInterface
     {
         $arguments = array_values(
-            array_filter($arguments, static fn ($argument) => ! $argument instanceof AllExpression)
+            array_filter($arguments, static fn ($argument) => ! $argument instanceof AllExpression),
         );
 
         switch (count($arguments)) {

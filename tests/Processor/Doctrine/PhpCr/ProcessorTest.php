@@ -190,7 +190,7 @@ class ProcessorTest extends TestCase
         self::assertEquals('donald duck', $result[0]->name);
     }
 
-    public function provideParamsForPageSize(): iterable
+    public static function provideParamsForPageSize(): iterable
     {
         yield [[]];
         yield [['order' => '$order(name)']];
@@ -222,7 +222,7 @@ class ProcessorTest extends TestCase
         self::assertCount(3, $result);
     }
 
-    public function provideRangeHeaders(): iterable
+    public static function provideRangeHeaders(): iterable
     {
         yield [ 'bytes=0-', 7 ]; // Not supported
 
@@ -274,7 +274,7 @@ class ProcessorTest extends TestCase
         $this->processor->processRequest(new Request([]));
     }
 
-    public function provideParamsForDefaultOrder(): iterable
+    public static function provideParamsForDefaultOrder(): iterable
     {
         yield [true, '$order(name)'];
         yield [true, 'name'];

@@ -12,6 +12,7 @@ use Doctrine\ODM\PHPCR\Configuration;
 use Doctrine\ODM\PHPCR\DocumentManager;
 use Doctrine\ODM\PHPCR\DocumentManagerInterface;
 use Doctrine\ODM\PHPCR\Mapping\Driver\AnnotationDriver;
+use Doctrine\ODM\PHPCR\Mapping\Driver\AttributeDriver;
 use Doctrine\ODM\PHPCR\NodeTypeRegistrator;
 use Jackalope\Factory;
 use Jackalope\Repository;
@@ -44,13 +45,20 @@ trait FixturesTrait
         $registrator->registerNodeTypes($session);
 
         $configuration = new Configuration();
-        $configuration->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader(), __DIR__ . '/../../../Fixtures/Document/PhpCrQueryLanguage'));
-        $configuration->setAutoGenerateProxyClasses(AbstractProxyFactory::AUTOGENERATE_EVAL);
+        if (class_exists(AnnotationDriver::class)) {
+            $configuration->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader(), __DIR__.'/../../Fixtures/Document'));
+            $configuration->setAutoGenerateProxyClasses(AbstractProxyFactory::AUTOGENERATE_EVAL);
+        } else {
+            $configuration->setMetadataDriverImpl(new AttributeDriver([__DIR__.'/../../Fixtures/Document']));
+        }
+
         $configuration->setProxyNamespace('__CG__\\' . QueryLanguageFixtures::class);
         $configuration->setProxyDir(sys_get_temp_dir() . '/' . uniqid('api-platform-proxy', true));
-        $configuration->setDocumentNamespaces([
-            QueryLanguageFixtures::class,
-        ]);
+        if (method_exists($configuration, 'setDocumentNamespaces')) {
+            $configuration->setDocumentNamespaces([
+                QueryLanguageFixtures::class,
+            ]);
+        }
 
         self::$documentManager = DocumentManager::create($session, $configuration);
 

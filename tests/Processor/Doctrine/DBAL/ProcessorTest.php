@@ -73,7 +73,7 @@ class ProcessorTest extends TestCase
         self::assertEquals('goofy', $result[0]['name']);
     }
 
-    public function provideParamsForPageSize(): iterable
+    public static function provideParamsForPageSize(): iterable
     {
         yield [[]];
         yield [['order' => '$order(name)']];
@@ -137,7 +137,7 @@ class ProcessorTest extends TestCase
         $this->processor->processRequest(new Request([]));
     }
 
-    public function provideParamsForDefaultOrder(): iterable
+    public static function provideParamsForDefaultOrder(): iterable
     {
         yield [true, '$order(name)'];
         yield [true, 'name'];

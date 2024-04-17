@@ -72,7 +72,7 @@ class SqlWalker extends AbstractWalker
         }
 
         $parameterName = $this->generateParameterName();
-        $this->queryBuilder->setParameter($parameterName, $expression->dispatch($this), $this->fieldType);
+        $this->queryBuilder->setParameter($parameterName, $expression->dispatch($this), $this->fieldType ?? 'string');
 
         return $field . ' ' . $operator . ' :' . $parameterName;
     }

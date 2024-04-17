@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Processor\Doctrine\ORM;
 
-use ArrayAccess;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\AssociationMapping;
 use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Mapping\FieldMapping;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Solido\QueryLanguage\Exception\Doctrine\FieldNotFoundException;
@@ -28,12 +29,12 @@ class Field implements FieldInterface
     private string $fieldType;
     /**
      * @var array<string, mixed>
-     * @phpstan-var array<array{fieldName: string, targetEntity: string}>
+     * @phpstan-var array<AssociationMapping | FieldMapping | array{fieldName: string, targetEntity: string}>
      */
     public array $associations;
 
     /** @var array<string, mixed> */
-    public ArrayAccess|array $mapping;
+    public FieldMapping|AssociationMapping|array $mapping;
 
     /** @var string|callable|null */
     public $validationWalker;
@@ -60,7 +61,14 @@ class Field implements FieldInterface
         }
 
         $this->mapping = $rootField ?? [];
-        $this->fieldType = isset($this->mapping['targetEntity']) ? 'string' : ($this->mapping['type'] ?? 'string');
+        if ($this->mapping instanceof AssociationMapping) {
+            $this->fieldType = 'string';
+        } elseif ($this->mapping instanceof FieldMapping) {
+            $this->fieldType = $this->mapping->type;
+        } else {
+            $this->fieldType = isset($this->mapping['targetEntity']) ? 'string' : ($this->mapping['type'] ?? 'string');
+        }
+
         $this->associations = [];
 
         if ($rest === null) {
@@ -125,7 +133,12 @@ class Field implements FieldInterface
         $currentFieldName = $alias;
         $currentAlias = $alias;
         foreach ($this->associations as $association) {
-            if (isset($association['targetEntity'])) { /* @phpstan-ignore-line */
+            if ($association instanceof AssociationMapping) {
+                $subQb->join($currentFieldName . '.' . $association->fieldName, 'sub_' . $association->fieldName);
+                $currentAlias = $currentFieldName = 'sub_' . $association->fieldName;
+            } elseif ($association instanceof FieldMapping) {
+                $currentFieldName = $currentAlias . '.' . $association->fieldName;
+            } elseif (isset($association['targetEntity'])) { /* @phpstan-ignore-line */
                 $subQb->join($currentFieldName . '.' . $association['fieldName'], 'sub_' . $association['fieldName']);
                 $currentAlias = $currentFieldName = 'sub_' . $association['fieldName'];
             } else {
@@ -168,7 +181,9 @@ class Field implements FieldInterface
      */
     public function getMappingFieldName(): string
     {
-        return $this->mapping['fieldName'];
+        return $this->mapping instanceof FieldMapping || $this->mapping instanceof AssociationMapping ?
+            $this->mapping->fieldName :
+            $this->mapping['fieldName'];
     }
 
     /**
@@ -176,14 +191,20 @@ class Field implements FieldInterface
      */
     public function isAssociation(): bool
     {
-        return isset($this->mapping['targetEntity']) || 0 < count($this->associations);
+        return $this->mapping instanceof AssociationMapping || isset($this->mapping['targetEntity']) || 0 < count($this->associations);
     }
 
     /**
      * Gets the association target entity.
+     *
+     * @return class-string
      */
     public function getTargetEntity(): string
     {
+        if ($this->mapping instanceof AssociationMapping) {
+            return $this->mapping->targetEntity;
+        }
+
         return $this->mapping['targetEntity'];
     }
 

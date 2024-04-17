@@ -26,7 +26,7 @@ class EnumWalker extends ValidationWalker
     /** @var string[] */
     private array $values;
 
-    /** @param class-string<Enum>|string[] $values */
+    /** @param class-string<Enum|UnitEnum|BackedEnum>|string[] $values */
     public function __construct(string|array $values)
     {
         parent::__construct();

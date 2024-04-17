@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace Solido\QueryLanguage\Tests\Fixtures\Document;
 
 use Doctrine\ODM\PHPCR\Mapping\Annotations as PHPCR;
+use Doctrine\ODM\PHPCR\Mapping\Attributes as PHPCRAttributes;
+
 use function mt_rand;
 use function strlen;
 
 /**
  * @PHPCR\Document(referenceable=true)
  */
+#[PHPCRAttributes\Document(referenceable: true)]
 class User
 {
     /** @PHPCR\Id(strategy="PARENT") */
+    #[PHPCRAttributes\Id(strategy: 'PARENT')]
     public ?string $id;
 
     /**
@@ -21,15 +25,19 @@ class User
      *
      * @var mixed
      */
+    #[PHPCRAttributes\ParentDocument]
     private $parent;
 
     /** @PHPCR\Nodename() */
+    #[PHPCRAttributes\Nodename]
     public string $name;
 
     /** @PHPCR\ReferenceOne(targetDocument=FooBar::class, strategy="hard", cascade={"persist", "remove"}) */
+    #[PHPCRAttributes\ReferenceOne(targetDocument: FooBar::class, strategy: 'hard', cascade: ['persist', 'remove'])]
     public FooBar $foobar;
 
     /** @PHPCR\Field(type="int") */
+    #[PHPCRAttributes\Field(type: 'int')]
     public int $nameLength;
 
     public function __construct(string $name, $parent = null)

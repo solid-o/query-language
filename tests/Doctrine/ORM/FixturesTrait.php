@@ -7,11 +7,16 @@ namespace Solido\QueryLanguage\Tests\Doctrine\ORM;
 use Closure;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\PDO\SQLite\Driver;
+use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Logging\Middleware as LoggingMiddleware;
+use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Tools\SchemaTool;
 use Psr\Log\AbstractLogger;
 use Solido\QueryLanguage\Tests\Fixtures\Entity as QueryLanguageFixtures;
@@ -28,7 +33,11 @@ trait FixturesTrait
     public static function setUpBeforeClass(): void
     {
         $configuration = new Configuration();
-        $configuration->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader(), __DIR__ . '/../../Fixtures/Entity'));
+        if (class_exists(AnnotationDriver::class)) {
+            $configuration->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader(), __DIR__.'/../../Fixtures/Entity'));
+        } else {
+            $configuration->setMetadataDriverImpl(new AttributeDriver([__DIR__.'/../../Fixtures/Entity']));
+        }
         $configuration->setAutoGenerateProxyClasses(AbstractProxyFactory::AUTOGENERATE_EVAL);
         $configuration->setProxyNamespace('__CG__\\' . QueryLanguageFixtures::class);
         $configuration->setProxyDir(sys_get_temp_dir() . '/' . uniqid('query-language-proxy', true));
@@ -53,7 +62,14 @@ trait FixturesTrait
             }),
         ]);
 
-        self::$entityManager = EntityManager::create(['url' => 'sqlite:///:memory:'], $configuration);
+        if (class_exists(DsnParser::class)) {
+            $params = (new DsnParser())->parse('sqlite3:///:memory:');
+        } else {
+            $params = ['url' => 'sqlite:///:memory:'];
+        }
+
+        $connection = DriverManager::getConnection($params, $configuration);
+        self::$entityManager = new EntityManager($connection, $configuration);
         $schemaTool = new SchemaTool(self::$entityManager);
         $schemaTool->updateSchema(self::$entityManager->getMetadataFactory()->getAllMetadata(), true);
 
