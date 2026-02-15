@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Walker\Doctrine;
 
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\ORM\Query\AST\Functions\FunctionNode;
 use Doctrine\ORM\Query\Lexer;
 use Doctrine\ORM\Query\Parser;
@@ -11,7 +14,6 @@ use Doctrine\ORM\Query\SqlWalker;
 use Doctrine\ORM\Query\TokenType;
 
 use function class_exists;
-use function str_contains;
 
 class JsonTextFunction extends FunctionNode
 {
@@ -37,17 +39,17 @@ class JsonTextFunction extends FunctionNode
     public function getSql(SqlWalker $sqlWalker): string
     {
         $valueSql = $sqlWalker->walkStringPrimary($this->value);
-        $platform = $sqlWalker->getConnection()->getDatabasePlatform()->getName();
+        $platform = $sqlWalker->getConnection()->getDatabasePlatform();
 
-        if (str_contains($platform, 'postgres')) {
+        if ($platform instanceof PostgreSQLPlatform) {
             return 'CAST(' . $valueSql . ' AS TEXT)';
         }
 
-        if (str_contains($platform, 'mysql') || str_contains($platform, 'maria')) {
+        if ($platform instanceof AbstractMySQLPlatform) {
             return 'CAST(' . $valueSql . ' AS CHAR)';
         }
 
-        if (str_contains($platform, 'sqlite')) {
+        if ($platform instanceof SqlitePlatform) {
             return 'CAST(' . $valueSql . ' AS TEXT)';
         }
 
