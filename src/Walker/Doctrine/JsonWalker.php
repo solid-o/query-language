@@ -65,7 +65,7 @@ class JsonWalker extends DqlWalker
 
     private function stringifyField(string $field): string
     {
-        return "CONCAT('', " . $field . ')';
+        return 'JSON_TEXT(' . $field . ')';
     }
 
     private function normalizeToString(mixed $value): string

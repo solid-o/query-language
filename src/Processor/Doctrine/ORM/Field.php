@@ -28,6 +28,7 @@ use function count;
 use function is_string;
 use function spl_object_id;
 use function sprintf;
+use function str_contains;
 
 /** @internal */
 class Field implements FieldInterface
@@ -278,11 +279,16 @@ class Field implements FieldInterface
             return is_string($walker) ? new $walker($queryBuilder, $fieldName) : $walker($queryBuilder, $fieldName, $this->fieldType);
         }
 
-        if ($this->fieldType === Types::JSON) {
+        if ($this->isJsonFieldType()) {
             return new JsonWalker($queryBuilder, $fieldName);
         }
 
         return new DqlWalker($queryBuilder, $fieldName, $this->fieldType);
+    }
+
+    private function isJsonFieldType(): bool
+    {
+        return $this->fieldType === Types::JSON || $this->fieldType === 'json_array' || str_contains($this->fieldType, 'json');
     }
 
     public function setToManyStrategy(string $strategy): void
@@ -392,6 +398,21 @@ class Field implements FieldInterface
         }
 
         $this->associations = $associations;
+        $this->fieldType = $this->resolveFieldType($associationField);
+    }
+
+    /** @param mixed[]|FieldMapping|AssociationMapping $mapping */
+    private function resolveFieldType(array|FieldMapping|AssociationMapping $mapping): string
+    {
+        if ($mapping instanceof AssociationMapping) {
+            return 'string';
+        }
+
+        if ($mapping instanceof FieldMapping) {
+            return $mapping->type;
+        }
+
+        return isset($mapping['targetEntity']) ? 'string' : ($mapping['type'] ?? 'string');
     }
 
     /**

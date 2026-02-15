@@ -32,7 +32,7 @@ class JsonWalkerTest extends TestCase
             $walker->walkComparison('=', LiteralExpression::create('{"foo":"bar"}'))
         );
 
-        self::assertSame("SELECT u FROM Solido\QueryLanguage\Tests\Fixtures\Entity\User u WHERE CONCAT('', u.name) = :u_name", $this->queryBuilder->getDQL());
+        self::assertSame("SELECT u FROM Solido\QueryLanguage\Tests\Fixtures\Entity\User u WHERE JSON_TEXT(u.name) = :u_name", $this->queryBuilder->getDQL());
         self::assertSame('{"foo":"bar"}', $this->queryBuilder->getParameter('u_name')->getValue());
         self::assertSame(Types::STRING, $this->queryBuilder->getParameter('u_name')->getType());
     }
@@ -50,7 +50,7 @@ class JsonWalkerTest extends TestCase
             $walker->walkComparison('=', LiteralExpression::create('foo'))
         );
 
-        self::assertSame("SELECT u FROM Solido\QueryLanguage\Tests\Fixtures\Entity\User u WHERE CONCAT('', u.name) LIKE :u_name", $this->queryBuilder->getDQL());
+        self::assertSame("SELECT u FROM Solido\QueryLanguage\Tests\Fixtures\Entity\User u WHERE JSON_TEXT(u.name) LIKE :u_name", $this->queryBuilder->getDQL());
         self::assertSame('%foo%', $this->queryBuilder->getParameter('u_name')->getValue());
         self::assertSame(Types::STRING, $this->queryBuilder->getParameter('u_name')->getType());
     }

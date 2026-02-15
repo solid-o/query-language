@@ -15,6 +15,7 @@ use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
+use Solido\QueryLanguage\Walker\Doctrine\JsonTextFunction;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -38,6 +39,10 @@ class Processor extends AbstractProcessor
         parent::__construct($dataMapperFactory, $options);
 
         $this->entityManager = $this->queryBuilder->getEntityManager();
+        $configuration = $this->entityManager->getConfiguration();
+        if ($configuration->getCustomStringFunction('JSON_TEXT') === null) {
+            $configuration->addCustomStringFunction('JSON_TEXT', JsonTextFunction::class);
+        }
 
         $this->rootAlias = $this->queryBuilder->getRootAliases()[0];
         $this->rootEntity = $this->entityManager->getClassMetadata($this->queryBuilder->getRootEntities()[0]);
