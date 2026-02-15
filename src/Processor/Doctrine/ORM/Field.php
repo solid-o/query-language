@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Processor\Doctrine\ORM;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\AssociationMapping;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -17,6 +18,8 @@ use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\Doctrine\DiscriminatorWalker;
 use Solido\QueryLanguage\Walker\Doctrine\DqlWalker;
+use Solido\QueryLanguage\Walker\Doctrine\JsonWalker;
+use Solido\QueryLanguage\Walker\TreeWalkerInterface;
 use Solido\QueryLanguage\Walker\Validation\EnumWalker;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 
@@ -120,14 +123,8 @@ class Field implements FieldInterface
     private function addWhereCondition(QueryBuilder $queryBuilder, ExpressionInterface $expression): void
     {
         $alias = $this->discriminator ? null : $this->getMappingFieldName();
-        $walker = $this->customWalker;
-
         $fieldName = $this->discriminator ? $this->rootAlias : $this->rootAlias . '.' . $alias;
-        if ($walker !== null) {
-            $walker = is_string($walker) ? new $walker($queryBuilder, $fieldName) : $walker($queryBuilder, $fieldName, $this->fieldType);
-        } else {
-            $walker = new DqlWalker($queryBuilder, $fieldName, $this->fieldType);
-        }
+        $walker = $this->createWalker($queryBuilder, $fieldName);
 
         $queryBuilder->andWhere($expression->dispatch($walker));
     }
@@ -164,11 +161,7 @@ class Field implements FieldInterface
             }
         }
 
-        if ($walker !== null) {
-            $walker = is_string($walker) ? new $walker($subQb, $currentFieldName) : $walker($subQb, $currentFieldName, $this->fieldType);
-        } else {
-            $walker = new DqlWalker($subQb, $currentFieldName, $this->fieldType);
-        }
+        $walker = $this->createWalker($subQb, $currentFieldName);
 
         $subQb->where($expression->dispatch($walker));
 
@@ -215,12 +208,7 @@ class Field implements FieldInterface
             }
         }
 
-        $walker = $this->customWalker;
-        if ($walker !== null) {
-            $walker = is_string($walker) ? new $walker($queryBuilder, $currentFieldName) : $walker($queryBuilder, $currentFieldName, $this->fieldType);
-        } else {
-            $walker = new DqlWalker($queryBuilder, $currentFieldName, $this->fieldType);
-        }
+        $walker = $this->createWalker($queryBuilder, $currentFieldName);
 
         $queryBuilder->andWhere($expression->dispatch($walker));
     }
@@ -281,6 +269,20 @@ class Field implements FieldInterface
     private function nextAlias(string $base): string
     {
         return $this->buildAlias($base, $this->aliasIndex++);
+    }
+
+    private function createWalker(QueryBuilder $queryBuilder, string $fieldName): TreeWalkerInterface
+    {
+        $walker = $this->customWalker;
+        if ($walker !== null) {
+            return is_string($walker) ? new $walker($queryBuilder, $fieldName) : $walker($queryBuilder, $fieldName, $this->fieldType);
+        }
+
+        if ($this->fieldType === Types::JSON) {
+            return new JsonWalker($queryBuilder, $fieldName);
+        }
+
+        return new DqlWalker($queryBuilder, $fieldName, $this->fieldType);
     }
 
     public function setToManyStrategy(string $strategy): void
