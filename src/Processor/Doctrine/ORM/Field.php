@@ -28,6 +28,7 @@ class Field implements FieldInterface
 {
     private string $fieldType;
     private string $aliasSuffix;
+    private int $aliasIndex;
     /**
      * @var array<string, mixed>
      * @phpstan-var array<AssociationMapping | FieldMapping | array{fieldName: string, targetEntity: string}>
@@ -55,6 +56,7 @@ class Field implements FieldInterface
         $this->customWalker = null;
         $this->discriminator = false;
         $this->aliasSuffix = (string) spl_object_id($this);
+        $this->aliasIndex = 0;
 
         [$rootField, $rest] = MappingHelper::processFieldName($rootEntity, $fieldName);
 
@@ -96,6 +98,8 @@ class Field implements FieldInterface
 
         if (! $assoc) {
             $this->addWhereCondition($queryBuilder, $expression);
+        } elseif ($this->isToOnePath()) {
+            $this->addToOneAssociationCondition($queryBuilder, $expression);
         } else {
             $this->addAssociationCondition($queryBuilder, $expression);
         }
@@ -176,6 +180,76 @@ class Field implements FieldInterface
         }
     }
 
+    /**
+     * Processes a to-one association path directly on the root query, reusing existing joins.
+     */
+    private function addToOneAssociationCondition(QueryBuilder $queryBuilder, ExpressionInterface $expression): void
+    {
+        $currentAlias = $this->getOrCreateJoinAlias($queryBuilder, $this->rootAlias, $this->getMappingFieldName());
+        $currentFieldName = $currentAlias;
+
+        foreach ($this->associations as $association) {
+            if ($association instanceof AssociationMapping) {
+                $currentAlias = $this->getOrCreateJoinAlias($queryBuilder, $currentAlias, $association->fieldName);
+                $currentFieldName = $currentAlias;
+            } elseif ($association instanceof FieldMapping) {
+                $currentFieldName = $currentAlias . '.' . $association->fieldName;
+            } elseif (isset($association['targetEntity'])) { /* @phpstan-ignore-line */
+                $currentAlias = $this->getOrCreateJoinAlias($queryBuilder, $currentAlias, $association['fieldName']);
+                $currentFieldName = $currentAlias;
+            } else {
+                $currentFieldName = $currentAlias . '.' . $association['fieldName'];
+            }
+        }
+
+        $walker = $this->customWalker;
+        if ($walker !== null) {
+            $walker = is_string($walker) ? new $walker($queryBuilder, $currentFieldName) : $walker($queryBuilder, $currentFieldName, $this->fieldType);
+        } else {
+            $walker = new DqlWalker($queryBuilder, $currentFieldName, $this->fieldType);
+        }
+
+        $queryBuilder->andWhere($expression->dispatch($walker));
+    }
+
+    private function getOrCreateJoinAlias(QueryBuilder $queryBuilder, string $fromAlias, string $associationField): string
+    {
+        $joinPath = $fromAlias . '.' . $associationField;
+        $joins = $queryBuilder->getDQLPart('join');
+
+        if (isset($joins[$fromAlias])) {
+            foreach ($joins[$fromAlias] as $join) {
+                if ($join->getJoin() === $joinPath) {
+                    return $join->getAlias();
+                }
+            }
+        }
+
+        $alias = $this->nextAlias('join_' . $associationField);
+        $queryBuilder->join($joinPath, $alias);
+
+        return $alias;
+    }
+
+    private function isToOnePath(): bool
+    {
+        if ($this->isToMany()) {
+            return false;
+        }
+
+        foreach ($this->associations as $association) {
+            if ($association instanceof AssociationMapping && ($association->type & ClassMetadata::TO_MANY) !== 0) {
+                return false;
+            }
+
+            if (isset($association['targetEntity']) && isset($association['type']) && ($association['type'] & ClassMetadata::TO_MANY) !== 0) { /* @phpstan-ignore-line */
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private function buildAlias(string $base, int|null $index = null): string
     {
         $alias = $base . '_' . $this->aliasSuffix;
@@ -184,6 +258,11 @@ class Field implements FieldInterface
         }
 
         return $alias;
+    }
+
+    private function nextAlias(string $base): string
+    {
+        return $this->buildAlias($base, $this->aliasIndex++);
     }
 
     public function getValidationWalker(): ValidationWalkerInterface|string|callable|null

@@ -28,6 +28,7 @@ use Symfony\Component\Form\ResolvedFormTypeFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Validator\ValidatorBuilder;
+use function substr_count;
 use function iterator_to_array;
 
 class ProcessorTest extends TestCase
@@ -143,6 +144,7 @@ class ProcessorTest extends TestCase
         self::assertCount(1, $result);
         self::assertInstanceOf(User::class, $result[0]);
         self::assertEquals('donald duck', $result[0]->name);
+        self::assertSame(1, substr_count(self::$queryLogs[0]['sql'], 'JOIN ql_foobar'));
     }
 
     public static function provideParamsForPageSize(): iterable
