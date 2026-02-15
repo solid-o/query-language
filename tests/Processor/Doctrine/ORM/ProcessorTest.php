@@ -128,6 +128,23 @@ class ProcessorTest extends TestCase
         self::assertEquals('donald duck', $result[0]->name);
     }
 
+    public function testMultipleFiltersOnSameRelatedEntityShouldWork(): void
+    {
+        $this->processor->addField('foobar_name', ['field_name' => 'foobar.foobar']);
+        $this->processor->addField('foobar_id', ['field_name' => 'foobar.id']);
+        $itr = $this->processor->processRequest(new Request([
+            'foobar_name' => 'foobar_donald duck',
+            'foobar_id' => '6',
+        ]));
+
+        self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
+        $result = iterator_to_array($itr);
+
+        self::assertCount(1, $result);
+        self::assertInstanceOf(User::class, $result[0]);
+        self::assertEquals('donald duck', $result[0]->name);
+    }
+
     public static function provideParamsForPageSize(): iterable
     {
         yield [[]];

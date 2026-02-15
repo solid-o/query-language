@@ -27,6 +27,7 @@ use function is_string;
 class Field implements FieldInterface
 {
     private string $fieldType;
+    private string $aliasSuffix;
     /**
      * @var array<string, mixed>
      * @phpstan-var array<AssociationMapping | FieldMapping | array{fieldName: string, targetEntity: string}>
@@ -53,6 +54,7 @@ class Field implements FieldInterface
         $this->validationWalker = null;
         $this->customWalker = null;
         $this->discriminator = false;
+        $this->aliasSuffix = (string) spl_object_id($this);
 
         [$rootField, $rest] = MappingHelper::processFieldName($rootEntity, $fieldName);
 
@@ -122,7 +124,7 @@ class Field implements FieldInterface
      */
     private function addAssociationCondition(QueryBuilder $queryBuilder, ExpressionInterface $expression): void
     {
-        $alias = 'sub_' . $this->getMappingFieldName();
+        $alias = $this->buildAlias('sub_' . $this->getMappingFieldName());
         $walker = $this->customWalker;
 
         $subQb = $this->entityManager->createQueryBuilder()
@@ -132,15 +134,18 @@ class Field implements FieldInterface
 
         $currentFieldName = $alias;
         $currentAlias = $alias;
+        $joinIndex = 0;
         foreach ($this->associations as $association) {
             if ($association instanceof AssociationMapping) {
-                $subQb->join($currentFieldName . '.' . $association->fieldName, 'sub_' . $association->fieldName);
-                $currentAlias = $currentFieldName = 'sub_' . $association->fieldName;
+                $associationAlias = $this->buildAlias('sub_' . $association->fieldName, $joinIndex++);
+                $subQb->join($currentFieldName . '.' . $association->fieldName, $associationAlias);
+                $currentAlias = $currentFieldName = $associationAlias;
             } elseif ($association instanceof FieldMapping) {
                 $currentFieldName = $currentAlias . '.' . $association->fieldName;
             } elseif (isset($association['targetEntity'])) { /* @phpstan-ignore-line */
-                $subQb->join($currentFieldName . '.' . $association['fieldName'], 'sub_' . $association['fieldName']);
-                $currentAlias = $currentFieldName = 'sub_' . $association['fieldName'];
+                $associationAlias = $this->buildAlias('sub_' . $association['fieldName'], $joinIndex++);
+                $subQb->join($currentFieldName . '.' . $association['fieldName'], $associationAlias);
+                $currentAlias = $currentFieldName = $associationAlias;
             } else {
                 $currentFieldName = $currentAlias . '.' . $association['fieldName'];
             }
@@ -169,6 +174,16 @@ class Field implements FieldInterface
                 ->andWhere($queryBuilder->expr()->exists($subQb->getDQL()))
                 ->setParameters($subQb->getParameters());
         }
+    }
+
+    private function buildAlias(string $base, int|null $index = null): string
+    {
+        $alias = $base . '_' . $this->aliasSuffix;
+        if ($index !== null) {
+            $alias .= '_' . $index;
+        }
+
+        return $alias;
     }
 
     public function getValidationWalker(): ValidationWalkerInterface|string|callable|null
