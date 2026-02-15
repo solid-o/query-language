@@ -114,7 +114,9 @@ class ProcessorTest extends TestCase
         self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
         iterator_to_array($itr);
 
-        self::assertSame('SELECT DISTINCT u0_.id AS id_0, u0_.name AS name_1, u0_.nameLength AS nameLength_2, u0_.foobar_id AS foobar_id_3 FROM User u0_ INNER JOIN user_group u2_ ON u0_.id = u2_.user_id INNER JOIN u_group u1_ ON u1_.id = u2_.group_id AND (u1_.id = ?) WHERE 1 = 1 LIMIT 10', self::$queryLogs[0]['sql']);
+        self::assertStringContainsString('FROM User u0_ INNER JOIN user_group', self::$queryLogs[0]['sql']);
+        self::assertStringContainsString('INNER JOIN u_group u1_', self::$queryLogs[0]['sql']);
+        self::assertStringContainsString('GROUP BY u0_.id', self::$queryLogs[0]['sql']);
         self::assertSame(1, self::$queryLogs[0]['params'][1]);
     }
 

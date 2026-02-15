@@ -168,8 +168,8 @@ class Field implements FieldInterface
 
         if ($this->isToMany()) {
             $queryBuilder
-                ->distinct()
                 ->join($this->rootAlias . '.' . $this->getMappingFieldName(), $alias, Join::WITH, $subQb->getDQLPart('where'));
+            $this->applyRootIdentifierGrouping($queryBuilder);
         } else {
             if ($this->isOwningSide()) {
                 $subQb->andWhere($subQb->expr()->eq($this->rootAlias . '.' . $this->getMappingFieldName(), $alias));
@@ -189,7 +189,7 @@ class Field implements FieldInterface
     private function addSharedAssociationCondition(QueryBuilder $queryBuilder, ExpressionInterface $expression): void
     {
         if (! $this->isToOnePath()) {
-            $queryBuilder->distinct();
+            $this->applyRootIdentifierGrouping($queryBuilder);
         }
 
         $currentAlias = $this->getOrCreateJoinAlias($queryBuilder, $this->rootAlias, $this->getMappingFieldName());
@@ -284,6 +284,19 @@ class Field implements FieldInterface
         }
 
         return new DqlWalker($queryBuilder, $fieldName, $this->fieldType);
+    }
+
+    private function applyRootIdentifierGrouping(QueryBuilder $queryBuilder): void
+    {
+        $rootEntity = $queryBuilder->getRootEntities()[0] ?? null;
+        if ($rootEntity === null) {
+            return;
+        }
+
+        $identifiers = $this->entityManager->getClassMetadata($rootEntity)->getIdentifierFieldNames();
+        foreach ($identifiers as $identifier) {
+            $queryBuilder->addGroupBy($this->rootAlias . '.' . $identifier);
+        }
     }
 
     private function isJsonFieldType(): bool
