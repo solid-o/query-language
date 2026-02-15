@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\FieldMapping;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
+use InvalidArgumentException;
 use Solido\QueryLanguage\Exception\Doctrine\FieldNotFoundException;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\OrderExpression;
@@ -22,13 +23,19 @@ use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
 use function array_keys;
 use function count;
 use function is_string;
+use function spl_object_id;
+use function sprintf;
 
 /** @internal */
 class Field implements FieldInterface
 {
+    public const TO_MANY_STRATEGY_SPLIT = 'split';
+    public const TO_MANY_STRATEGY_SHARED = 'shared';
+
     private string $fieldType;
     private string $aliasSuffix;
     private int $aliasIndex;
+    private string $toManyStrategy;
     /**
      * @var array<string, mixed>
      * @phpstan-var array<AssociationMapping | FieldMapping | array{fieldName: string, targetEntity: string}>
@@ -51,12 +58,14 @@ class Field implements FieldInterface
         private readonly string $rootAlias,
         ClassMetadata $rootEntity,
         private readonly EntityManagerInterface $entityManager,
+        string $toManyStrategy = self::TO_MANY_STRATEGY_SPLIT,
     ) {
         $this->validationWalker = null;
         $this->customWalker = null;
         $this->discriminator = false;
         $this->aliasSuffix = (string) spl_object_id($this);
         $this->aliasIndex = 0;
+        $this->setToManyStrategy($toManyStrategy);
 
         [$rootField, $rest] = MappingHelper::processFieldName($rootEntity, $fieldName);
 
@@ -98,8 +107,8 @@ class Field implements FieldInterface
 
         if (! $assoc) {
             $this->addWhereCondition($queryBuilder, $expression);
-        } elseif ($this->isToOnePath()) {
-            $this->addToOneAssociationCondition($queryBuilder, $expression);
+        } elseif ($this->shouldUseSharedJoinPath()) {
+            $this->addSharedAssociationCondition($queryBuilder, $expression);
         } else {
             $this->addAssociationCondition($queryBuilder, $expression);
         }
@@ -181,10 +190,14 @@ class Field implements FieldInterface
     }
 
     /**
-     * Processes a to-one association path directly on the root query, reusing existing joins.
+     * Processes an association path directly on the root query, reusing existing joins.
      */
-    private function addToOneAssociationCondition(QueryBuilder $queryBuilder, ExpressionInterface $expression): void
+    private function addSharedAssociationCondition(QueryBuilder $queryBuilder, ExpressionInterface $expression): void
     {
+        if (! $this->isToOnePath()) {
+            $queryBuilder->distinct();
+        }
+
         $currentAlias = $this->getOrCreateJoinAlias($queryBuilder, $this->rootAlias, $this->getMappingFieldName());
         $currentFieldName = $currentAlias;
 
@@ -238,16 +251,21 @@ class Field implements FieldInterface
         }
 
         foreach ($this->associations as $association) {
-            if ($association instanceof AssociationMapping && ($association->type & ClassMetadata::TO_MANY) !== 0) {
+            if ($association instanceof AssociationMapping && ($association->type() & ClassMetadata::TO_MANY) !== 0) {
                 return false;
             }
 
-            if (isset($association['targetEntity']) && isset($association['type']) && ($association['type'] & ClassMetadata::TO_MANY) !== 0) { /* @phpstan-ignore-line */
+            if (isset($association['targetEntity']) && isset($association['type']) && ($association['type'] & ClassMetadata::TO_MANY) !== 0) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private function shouldUseSharedJoinPath(): bool
+    {
+        return $this->isToOnePath() || $this->toManyStrategy === self::TO_MANY_STRATEGY_SHARED;
     }
 
     private function buildAlias(string $base, int|null $index = null): string
@@ -263,6 +281,20 @@ class Field implements FieldInterface
     private function nextAlias(string $base): string
     {
         return $this->buildAlias($base, $this->aliasIndex++);
+    }
+
+    public function setToManyStrategy(string $strategy): void
+    {
+        if ($strategy !== self::TO_MANY_STRATEGY_SPLIT && $strategy !== self::TO_MANY_STRATEGY_SHARED) {
+            throw new InvalidArgumentException(sprintf(
+                'Unknown to-many strategy "%s". Allowed: "%s", "%s".',
+                $strategy,
+                self::TO_MANY_STRATEGY_SPLIT,
+                self::TO_MANY_STRATEGY_SHARED,
+            ));
+        }
+
+        $this->toManyStrategy = $strategy;
     }
 
     public function getValidationWalker(): ValidationWalkerInterface|string|callable|null

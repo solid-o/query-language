@@ -24,7 +24,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use function array_filter;
 use function array_keys;
 use function Safe\preg_match;
-use function strpos;
+use function str_contains;
 
 abstract class AbstractProcessor
 {
@@ -243,7 +243,7 @@ abstract class AbstractProcessor
                     return $value;
                 }
 
-                if (strpos($value, '$') === false) {
+                if (! str_contains($value, '$')) {
                     $value = '$order(' . $value . ')';
                 }
 

@@ -16,6 +16,7 @@ use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Processor\Doctrine\AbstractProcessor;
 use Solido\QueryLanguage\Processor\Doctrine\FieldInterface;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use function assert;
 
@@ -27,7 +28,7 @@ class Processor extends AbstractProcessor
 
     /**
      * @param array<string, mixed> $options
-     * @phpstan-param array{order_field?: string, skip_field?: string, limit_field?: string, default_order?: string, default_page_size?: int, order_validation_walker?: ValidationWalkerInterface, continuation_token?: bool|array{field:string, checksum_field:string}} $options
+     * @phpstan-param array{order_field?: string, skip_field?: string, limit_field?: string, default_order?: string, default_page_size?: int, order_validation_walker?: ValidationWalkerInterface, continuation_token?: bool|array{field:string, checksum_field:string}, to_many_strategy?: string} $options
      */
     public function __construct(
         private readonly QueryBuilder $queryBuilder,
@@ -44,7 +45,13 @@ class Processor extends AbstractProcessor
 
     protected function createField(string $fieldName): FieldInterface
     {
-        return new Field($fieldName, $this->rootAlias, $this->rootEntity, $this->entityManager);
+        return new Field(
+            $fieldName,
+            $this->rootAlias,
+            $this->rootEntity,
+            $this->entityManager,
+            $this->options['to_many_strategy'],
+        );
     }
 
     /**
@@ -95,5 +102,13 @@ class Processor extends AbstractProcessor
             $field = $this->fields[$key];
             $field->addCondition($this->queryBuilder, $expr);
         }
+    }
+
+    protected function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver
+            ->setDefault('to_many_strategy', Field::TO_MANY_STRATEGY_SPLIT)
+            ->setAllowedTypes('to_many_strategy', 'string')
+            ->setAllowedValues('to_many_strategy', [Field::TO_MANY_STRATEGY_SPLIT, Field::TO_MANY_STRATEGY_SHARED]);
     }
 }

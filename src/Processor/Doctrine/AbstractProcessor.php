@@ -12,6 +12,7 @@ use Solido\QueryLanguage\Processor\Doctrine\FieldInterface as DoctrineFieldInter
 use Solido\QueryLanguage\Processor\FieldInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+use function method_exists;
 use function sprintf;
 
 abstract class AbstractProcessor extends BaseAbstractProcessor
@@ -37,10 +38,12 @@ abstract class AbstractProcessor extends BaseAbstractProcessor
                 'field_name' => $name,
                 'walker' => null,
                 'validation_walker' => null,
+                'to_many_strategy' => null,
             ])
             ->setAllowedTypes('field_name', 'string')
             ->setAllowedTypes('walker', ['null', 'string', 'callable'])
             ->setAllowedTypes('validation_walker', ['null', 'string', 'callable'])
+            ->setAllowedTypes('to_many_strategy', ['null', 'string'])
             ->resolve($options);
 
         $field = $this->createField($options['field_name']);
@@ -51,6 +54,10 @@ abstract class AbstractProcessor extends BaseAbstractProcessor
 
         if ($options['validation_walker'] !== null) {
             $field->validationWalker = $options['validation_walker']; /* @phpstan-ignore-line */
+        }
+
+        if ($options['to_many_strategy'] !== null && method_exists($field, 'setToManyStrategy')) {
+            $field->setToManyStrategy($options['to_many_strategy']);
         }
 
         $this->fields[$name] = $field;

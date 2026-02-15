@@ -14,10 +14,12 @@ use Solido\Pagination\PagerIterator;
 use Solido\QueryLanguage\Expression\ExpressionInterface;
 use Solido\QueryLanguage\Expression\OrderExpression;
 use Solido\QueryLanguage\Processor\FieldInterface;
+use Solido\QueryLanguage\Processor\Doctrine\ORM\Field as ORMField;
 use Solido\QueryLanguage\Processor\Doctrine\ORM\Processor;
 use Solido\QueryLanguage\Processor\OrderableFieldInterface;
 use Solido\QueryLanguage\Tests\Doctrine\ORM\FixturesTrait;
 use Solido\QueryLanguage\Tests\Fixtures\Entity\FooBar;
+use Solido\QueryLanguage\Tests\Fixtures\Entity\Group;
 use Solido\QueryLanguage\Tests\Fixtures\Entity\User;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalker;
 use Solido\QueryLanguage\Walker\Validation\ValidationWalkerInterface;
@@ -145,6 +147,150 @@ class ProcessorTest extends TestCase
         self::assertInstanceOf(User::class, $result[0]);
         self::assertEquals('donald duck', $result[0]->name);
         self::assertSame(1, substr_count(self::$queryLogs[0]['sql'], 'JOIN ql_foobar'));
+    }
+
+    public function testToManySplitStrategyShouldMatchDifferentRows(): void
+    {
+        $userName = 'multigroup split';
+        $groupName1 = 'group1001';
+        $groupName2 = 'group1002';
+        $user = new User($userName);
+        $group1 = new Group(1001, $groupName1);
+        $group2 = new Group(1002, $groupName2);
+        $user->groups[] = $group1;
+        $user->groups[] = $group2;
+
+        self::$entityManager->persist($group1);
+        self::$entityManager->persist($group2);
+        self::$entityManager->persist($user);
+        self::$entityManager->flush();
+        $group1Id = (string) $group1->id;
+        self::$entityManager->clear();
+
+        try {
+            $this->processor->addField('group_id', ['field_name' => 'groups.id']);
+            $this->processor->addField('group_name', ['field_name' => 'groups.name']);
+            $itr = $this->processor->processRequest(new Request([
+                'group_id' => $group1Id,
+                'group_name' => $groupName2,
+            ]));
+
+            self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
+            $result = iterator_to_array($itr);
+            self::assertCount(1, $result);
+            self::assertSame($userName, $result[0]->name);
+        } finally {
+            $this->cleanupUserAndGroups($userName, [$groupName1, $groupName2]);
+        }
+    }
+
+    public function testToManySharedStrategyShouldRequireSameRowMatch(): void
+    {
+        $userName = 'multigroup shared';
+        $groupName1 = 'group1101';
+        $groupName2 = 'group1102';
+        $user = new User($userName);
+        $group1 = new Group(1101, $groupName1);
+        $group2 = new Group(1102, $groupName2);
+        $user->groups[] = $group1;
+        $user->groups[] = $group2;
+
+        self::$entityManager->persist($group1);
+        self::$entityManager->persist($group2);
+        self::$entityManager->persist($user);
+        self::$entityManager->flush();
+        $group1Id = (string) $group1->id;
+        self::$entityManager->clear();
+
+        try {
+            $this->processor = new Processor(
+                self::$entityManager->getRepository(User::class)->createQueryBuilder('u'),
+                $this->dataMapperFactory,
+                [
+                    'order_field' => 'order',
+                    'continuation_token' => true,
+                    'to_many_strategy' => ORMField::TO_MANY_STRATEGY_SHARED,
+                ],
+            );
+
+            $this->processor->addField('group_id', ['field_name' => 'groups.id']);
+            $this->processor->addField('group_name', ['field_name' => 'groups.name']);
+            $itr = $this->processor->processRequest(new Request([
+                'group_id' => $group1Id,
+                'group_name' => $groupName2,
+            ]));
+
+            self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
+            self::assertCount(0, iterator_to_array($itr));
+        } finally {
+            $this->cleanupUserAndGroups($userName, [$groupName1, $groupName2]);
+        }
+    }
+
+    public function testToManyStrategyCanBeOverriddenPerField(): void
+    {
+        $userName = 'multigroup override';
+        $groupName1 = 'group1201';
+        $groupName2 = 'group1202';
+        $user = new User($userName);
+        $group1 = new Group(1201, $groupName1);
+        $group2 = new Group(1202, $groupName2);
+        $user->groups[] = $group1;
+        $user->groups[] = $group2;
+
+        self::$entityManager->persist($group1);
+        self::$entityManager->persist($group2);
+        self::$entityManager->persist($user);
+        self::$entityManager->flush();
+        $group1Id = (string) $group1->id;
+        self::$entityManager->clear();
+
+        try {
+            $this->processor = new Processor(
+                self::$entityManager->getRepository(User::class)->createQueryBuilder('u'),
+                $this->dataMapperFactory,
+                [
+                    'order_field' => 'order',
+                    'continuation_token' => true,
+                    'to_many_strategy' => ORMField::TO_MANY_STRATEGY_SHARED,
+                ],
+            );
+
+            $this->processor->addField('group_id', ['field_name' => 'groups.id', 'to_many_strategy' => ORMField::TO_MANY_STRATEGY_SPLIT]);
+            $this->processor->addField('group_name', ['field_name' => 'groups.name', 'to_many_strategy' => ORMField::TO_MANY_STRATEGY_SPLIT]);
+            $itr = $this->processor->processRequest(new Request([
+                'group_id' => $group1Id,
+                'group_name' => $groupName2,
+            ]));
+
+            self::assertInstanceOf(ObjectIteratorInterface::class, $itr);
+            $result = iterator_to_array($itr);
+            self::assertCount(1, $result);
+            self::assertSame($userName, $result[0]->name);
+        } finally {
+            $this->cleanupUserAndGroups($userName, [$groupName1, $groupName2]);
+        }
+    }
+
+    /**
+     * @param string[] $groupNames
+     */
+    private function cleanupUserAndGroups(string $userName, array $groupNames): void
+    {
+        $user = self::$entityManager->getRepository(User::class)->findOneBy(['name' => $userName]);
+        if ($user !== null) {
+            self::$entityManager->remove($user);
+        }
+
+        foreach ($groupNames as $groupName) {
+            $group = self::$entityManager->getRepository(Group::class)->findOneBy(['name' => $groupName]);
+            if ($group !== null) {
+                self::$entityManager->remove($group);
+            }
+        }
+
+        self::$entityManager->flush();
+        self::$entityManager->clear();
     }
 
     public static function provideParamsForPageSize(): iterable
