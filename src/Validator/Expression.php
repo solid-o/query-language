@@ -18,7 +18,7 @@ use function sprintf;
 class Expression extends Constraint
 {
     /**
-     * @var string|callable|ValidationWalkerInterface
+     * @var string|callable|ValidationWalkerInterface|null
      */
     public $walker;
 
@@ -29,7 +29,7 @@ class Expression extends Constraint
      */
     public function __construct(mixed $walker, array|null $groups = null, $payload = null)
     {
-        if (! is_string($walker) && ! is_callable($walker) && ! $walker instanceof ValidationWalkerInterface) {
+        if ($walker !== null && ! is_string($walker) && ! is_callable($walker) && ! $walker instanceof ValidationWalkerInterface) {
             throw new TypeError(sprintf('"%s": Expected argument $walker to be either a string, a callable, an instance of %s or an array, got "%s".', __METHOD__, ValidationWalkerInterface::class, get_debug_type($walker)));
         }
 
