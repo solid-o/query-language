@@ -19,8 +19,8 @@ use function sprintf;
 
 class JsonWalker extends DqlWalker
 {
-    public const STRATEGY_EQUALS = 'equals';
-    public const STRATEGY_CONTAINS = 'contains';
+    public const string STRATEGY_EQUALS = 'equals';
+    public const string STRATEGY_CONTAINS = 'contains';
 
     public function __construct(
         QueryBuilder $queryBuilder,

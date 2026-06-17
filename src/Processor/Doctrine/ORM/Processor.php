@@ -25,6 +25,7 @@ class Processor extends AbstractProcessor
 {
     private string $rootAlias;
     private EntityManagerInterface $entityManager;
+    /** @var ClassMetadata<object> */
     private ClassMetadata $rootEntity;
 
     /**
@@ -67,7 +68,11 @@ class Processor extends AbstractProcessor
         return $this->rootEntity->getIdentifierColumnNames();
     }
 
-    /** @throws MappingErrorException */
+    /**
+     * @return ObjectIteratorInterface<mixed>
+     *
+     * @throws MappingErrorException
+     */
     public function processRequest(object $request): ObjectIteratorInterface
     {
         $result = $this->handleRequest($request);
@@ -76,6 +81,7 @@ class Processor extends AbstractProcessor
         return $this->buildIterator($this->queryBuilder, $result);
     }
 
+    /** @return ObjectIteratorInterface<mixed> */
     protected function buildIterator(object $queryBuilder, Query $result): ObjectIteratorInterface
     {
         assert($queryBuilder instanceof QueryBuilder);

@@ -7,7 +7,6 @@ namespace Solido\QueryLanguage\Processor\Doctrine\PhpCr;
 use Doctrine\ODM\PHPCR\Mapping\ClassMetadata;
 
 use function array_key_last;
-use function assert;
 use function explode;
 use function in_array;
 use function strlen;
@@ -27,7 +26,6 @@ final class MappingHelper
     public static function processFieldName(ClassMetadata $classMetadata, string $fieldName): array
     {
         $dots = substr_count($fieldName, '.');
-        assert($dots !== false);
 
         $revFieldName = strrev($fieldName);
 

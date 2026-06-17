@@ -76,8 +76,6 @@ class Field implements FieldInterface
      */
     public function addCondition(object $queryBuilder, ExpressionInterface $expression): void
     {
-        assert($queryBuilder instanceof QueryBuilder);
-
         if ($this->isAssociation()) {
             $this->addAssociationCondition($queryBuilder, $expression);
         } else {
@@ -115,17 +113,15 @@ class Field implements FieldInterface
         $walker = $this->customWalker;
 
         $targetDocument = $this->documentManager->getClassMetadata($this->getTargetDocument());
-        assert($targetDocument instanceof ClassMetadata);
 
         if ($targetDocument->uuidFieldName === null) {
             throw new RuntimeException('Uuid field must be declared to build association conditions');
         }
 
-        // @phpstan-ignore-next-line
-        $queryBuilder->addJoinInner()
-            ->right()->document($this->getTargetDocument(), $alias)->end()
-            ->condition()->equi($this->rootAlias . '.' . $alias, $alias . '.' . $targetDocument->uuidFieldName)->end()
-        ->end();
+        $join = $queryBuilder->addJoinInner();
+        $join->right()->document($this->getTargetDocument(), $alias)->end();
+        $join->condition()->equi($this->rootAlias . '.' . $alias, $alias . '.' . $targetDocument->uuidFieldName)->end();
+        $join->end();
 
         $currentFieldName = $alias;
         $currentAlias = $alias;
@@ -134,11 +130,10 @@ class Field implements FieldInterface
                 $from = $queryBuilder->getChildOfType(AbstractNode::NT_FROM);
                 assert($from instanceof From);
 
-                // @phpstan-ignore-next-line
-                $from->joinInner()
-                    ->left()->document($association['sourceDocument'], $currentAlias)->end()
-                    ->right()->document($association['targetDocument'], $currentFieldName = $association['fieldName'])->end()
-                ->end();
+                $join = $from->joinInner();
+                $join->left()->document($association['sourceDocument'], $currentAlias)->end();
+                $join->right()->document($association['targetDocument'], $currentFieldName = $association['fieldName'])->end();
+                $join->end();
 
                 $currentAlias = $association['fieldName'];
             } else {
@@ -197,7 +192,6 @@ class Field implements FieldInterface
             assert(isset($associationField['targetDocument']));
 
             $targetDocument = $documentManager->getClassMetadata($associationField['targetDocument']);
-            assert($targetDocument instanceof ClassMetadata);
 
             [$associationField, $rest] = MappingHelper::processFieldName($targetDocument, $rest);
             assert(isset($associationField['type']));

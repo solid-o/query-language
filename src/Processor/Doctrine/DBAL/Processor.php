@@ -39,7 +39,11 @@ class Processor extends AbstractProcessor
         $this->identifierFields = array_values($this->options['identifiers']);
     }
 
-    /** @throws MappingErrorException */
+    /**
+     * @return ObjectIteratorInterface<mixed>
+     *
+     * @throws MappingErrorException
+     */
     public function processRequest(object $request): ObjectIteratorInterface
     {
         $result = $this->handleRequest($request);
@@ -48,6 +52,7 @@ class Processor extends AbstractProcessor
         return $this->buildIterator($this->queryBuilder, $result);
     }
 
+    /** @return ObjectIteratorInterface<mixed> */
     protected function buildIterator(object $queryBuilder, Query $result): ObjectIteratorInterface
     {
         assert($queryBuilder instanceof QueryBuilder);

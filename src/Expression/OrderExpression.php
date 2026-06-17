@@ -28,11 +28,12 @@ final class OrderExpression implements ExpressionInterface
     public static function fromHeader(string $header): self
     {
         $res = preg_match_all('/(?:[^,"]++(?:"[^"]*+")?)+[^,"]*+/', $header, $matches);
-        if (! $res) {
+        $match = $matches[0][0] ?? null;
+        if (! $res || $match === null) {
             throw new InvalidHeaderException('Invalid header passed, cannot be parsed');
         }
 
-        $expl = array_map('trim', explode(';', $matches[0][0]));
+        $expl = array_map('trim', explode(';', $match));
         if (count($expl) === 1 || ! preg_match('/^(:?a|de)sc$/i', $expl[1])) {
             return new self($expl[0], 'asc');
         }

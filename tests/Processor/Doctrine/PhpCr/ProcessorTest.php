@@ -6,6 +6,7 @@ namespace Solido\QueryLanguage\Tests\Processor\Doctrine\PhpCr;
 
 use Doctrine\ODM\PHPCR\DocumentManagerInterface;
 use Doctrine\ODM\PHPCR\Query\Builder\QueryBuilder;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
 use Refugis\DoctrineExtra\ODM\PhpCr\DocumentIterator;
@@ -197,9 +198,7 @@ class ProcessorTest extends TestCase
         yield [['order' => '$order(name)', 'continue' => '=YmF6_1_10tf9ny']];
     }
 
-    /**
-     * @dataProvider provideParamsForPageSize
-     */
+    #[DataProvider('provideParamsForPageSize')]
     public function testPageSizeOptionShouldWork(array $params): void
     {
         $this->processor = new Processor(
@@ -231,9 +230,7 @@ class ProcessorTest extends TestCase
         yield [ 'after==YmF6_1_q7c73y', 4 ];
     }
 
-    /**
-     * @dataProvider provideRangeHeaders
-     */
+    #[DataProvider('provideRangeHeaders')]
     public function testRangeHeader(string $rangeHeader, int $count): void
     {
         $this->processor = new Processor(
@@ -282,9 +279,7 @@ class ProcessorTest extends TestCase
         yield [false, '$order(nonexistent, asc)'];
     }
 
-    /**
-     * @dataProvider provideParamsForDefaultOrder
-     */
+    #[DataProvider('provideParamsForDefaultOrder')]
     public function testOrderByDefaultFieldShouldWork(bool $valid, string $defaultOrder): void
     {
         $this->processor = new Processor(

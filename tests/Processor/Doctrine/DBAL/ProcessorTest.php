@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Solido\QueryLanguage\Tests\Processor\Doctrine\DBAL;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Refugis\DoctrineExtra\DBAL\RowIterator;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
@@ -80,9 +81,7 @@ class ProcessorTest extends TestCase
         yield [['order' => '$order(name)', 'continue' => '=YmF6_1_10tf9ny']];
     }
 
-    /**
-     * @dataProvider provideParamsForPageSize
-     */
+    #[DataProvider('provideParamsForPageSize')]
     public function testPageSizeOptionShouldWork(array $params): void
     {
         $this->processor->addField('name');
@@ -145,9 +144,7 @@ class ProcessorTest extends TestCase
         yield [false, '$order(nonexistent, asc)'];
     }
 
-    /**
-     * @dataProvider provideParamsForDefaultOrder
-     */
+    #[DataProvider('provideParamsForDefaultOrder')]
     public function testOrderByDefaultFieldShouldWork(bool $valid, string $defaultOrder): void
     {
         $queryBuilder = self::$entityManager->getConnection()->createQueryBuilder();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Solido\QueryLanguage\Tests\Processor\Doctrine\ORM;
 
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Refugis\DoctrineExtra\ObjectIteratorInterface;
 use Refugis\DoctrineExtra\ORM\EntityIterator;
@@ -302,9 +303,7 @@ class ProcessorTest extends TestCase
         yield [['order' => '$order(name)', 'continue' => '=YmF6_1_10tf9ny']];
     }
 
-    /**
-     * @dataProvider provideParamsForPageSize
-     */
+    #[DataProvider('provideParamsForPageSize')]
     public function testPageSizeOptionShouldWork(array $params): void
     {
         $this->processor->addField('name');
@@ -343,9 +342,7 @@ class ProcessorTest extends TestCase
         yield [false, '$order(nonexistent, asc)'];
     }
 
-    /**
-     * @dataProvider provideParamsForDefaultOrder
-     */
+    #[DataProvider('provideParamsForDefaultOrder')]
     public function testOrderByDefaultFieldShouldWork(bool $valid, string $defaultOrder): void
     {
         $this->processor = new Processor(
@@ -378,9 +375,7 @@ class ProcessorTest extends TestCase
         yield [ 'after==YmF6_1_10tf9ny', 4 ];
     }
 
-    /**
-     * @dataProvider provideRangeHeaders
-     */
+    #[DataProvider('provideRangeHeaders')]
     public function testRangeHeader(string $rangeHeader, int $count): void
     {
         $this->processor = new Processor(

@@ -12,6 +12,7 @@ use Solido\QueryLanguage\Expression\ValueExpression;
 
 class DiscriminatorWalker extends DqlWalker
 {
+    /** @var ClassMetadata<object> */
     private ClassMetadata $rootEntity;
 
     public function __construct(QueryBuilder $queryBuilder, string $field)

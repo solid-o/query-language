@@ -65,7 +65,7 @@ class QueryType extends AbstractType
 
         if ($options['skip_field'] !== null) {
             $builder->add(
-                $builder->create($options['skip_field'], IntegerType::class, ['property_path' => 'page'])->addModelTransformer(new class implements DataTransformerInterface {
+                $builder->create($options['skip_field'], IntegerType::class, ['property_path' => 'page'])->addModelTransformer(new /** @implements DataTransformerInterface<PageOffset|null, int|null> */ class implements DataTransformerInterface {
                     public function transform(mixed $value): int|null
                     {
                         if ($value instanceof PageOffset) {
@@ -95,7 +95,7 @@ class QueryType extends AbstractType
         if ($options['limit_field'] !== null) {
             $builder->add($options['limit_field'], IntegerType::class, [
                 'property_path' => 'limit',
-                'constraints' => [new Range(['min' => 0])],
+                'constraints' => [new Range(min: 0)],
             ]);
         }
 

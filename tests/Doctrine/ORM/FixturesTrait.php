@@ -18,6 +18,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Tools\SchemaTool;
+use PHPUnit\Framework\Attributes\Before;
 use Psr\Log\AbstractLogger;
 use Solido\QueryLanguage\Tests\Fixtures\Entity as QueryLanguageFixtures;
 
@@ -33,6 +34,7 @@ trait FixturesTrait
     public static function setUpBeforeClass(): void
     {
         $configuration = new Configuration();
+        $configuration->enableNativeLazyObjects(true);
         if (class_exists(AnnotationDriver::class)) {
             $configuration->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader(), __DIR__.'/../../Fixtures/Entity'));
         } else {
@@ -96,9 +98,7 @@ trait FixturesTrait
         self::$entityManager->clear();
     }
 
-    /**
-     * @before
-     */
+    #[Before]
     public function beforeEachClearLogs(): void
     {
         self::$queryLogs = [];

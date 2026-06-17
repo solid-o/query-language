@@ -43,7 +43,6 @@ class Processor extends AbstractProcessor
         /** @phpstan-var class-string $sourceFqn */
         $sourceFqn = $sourceNode->getDocumentFqn();
         $classMetadata = $this->documentManager->getClassMetadata($sourceFqn);
-        assert($classMetadata instanceof ClassMetadata);
 
         $this->rootDocument = $classMetadata;
         $this->rootAlias = $sourceNode->getAlias();
@@ -66,6 +65,8 @@ class Processor extends AbstractProcessor
      * Processes and validates the request, adds the filters to the query builder and
      * returns the iterator with the results.
      *
+     * @return ObjectIteratorInterface<mixed>
+     *
      * @throws MappingErrorException
      */
     public function processRequest(object $request): ObjectIteratorInterface
@@ -76,6 +77,7 @@ class Processor extends AbstractProcessor
         return $this->buildIterator($this->queryBuilder, $result);
     }
 
+    /** @return ObjectIteratorInterface<mixed> */
     protected function buildIterator(object $queryBuilder, Query $result): ObjectIteratorInterface
     {
         assert($queryBuilder instanceof QueryBuilder);

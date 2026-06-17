@@ -14,7 +14,6 @@ use Solido\QueryLanguage\Expression\Literal\LiteralExpression;
 use Solido\QueryLanguage\Expression\Logical;
 use Solido\QueryLanguage\Expression\OrderExpression;
 
-use function assert;
 use function md5;
 
 final class Grammar extends AbstractGrammar
@@ -52,7 +51,6 @@ final class Grammar extends AbstractGrammar
             $expr = parent::parse($input);
             if (isset($item)) {
                 $item->set($expr);
-                assert($this->cache !== null);
                 $this->cache->saveDeferred($item);
             }
         }

@@ -25,7 +25,7 @@ use function Safe\preg_replace;
 
 class DqlWalker extends AbstractWalker
 {
-    private const COMPARISON_MAP = [
+    private const array COMPARISON_MAP = [
         '=' => Expr\Comparison::EQ,
         '<' => Expr\Comparison::LT,
         '<=' => Expr\Comparison::LTE,

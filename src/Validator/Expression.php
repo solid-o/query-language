@@ -17,21 +17,19 @@ use function sprintf;
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class Expression extends Constraint
 {
-    /**
-     * @var string|callable|ValidationWalkerInterface|null
-     */
+    /** @var string|callable|ValidationWalkerInterface|null */
     public $walker;
 
     /**
      * {@inheritDoc}
-     *
-     * @param mixed $walker
      */
     public function __construct(mixed $walker, array|null $groups = null, $payload = null)
     {
         if ($walker !== null && ! is_string($walker) && ! is_callable($walker) && ! $walker instanceof ValidationWalkerInterface) {
             throw new TypeError(sprintf('"%s": Expected argument $walker to be either a string, a callable, an instance of %s or an array, got "%s".', __METHOD__, ValidationWalkerInterface::class, get_debug_type($walker)));
         }
+
+        $this->walker = $walker;
 
         parent::__construct(null, $groups, $payload);
     }

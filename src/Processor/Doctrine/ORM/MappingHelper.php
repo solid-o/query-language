@@ -7,7 +7,6 @@ namespace Solido\QueryLanguage\Processor\Doctrine\ORM;
 use Doctrine\ORM\Mapping\ClassMetadata;
 
 use function array_key_last;
-use function assert;
 use function explode;
 use function strlen;
 use function strrev;
@@ -20,12 +19,13 @@ final class MappingHelper
      * Processes ORM mapping finding the root field by $fieldName.
      * Returns the root field (if found) and the rest part as an array of strings.
      *
+     * @phpstan-param ClassMetadata<object> $classMetadata
+     *
      * @return mixed[]
      */
     public static function processFieldName(ClassMetadata $classMetadata, string $fieldName): array
     {
         $dots = substr_count($fieldName, '.');
-        assert($dots !== false);
 
         $revFieldName = strrev($fieldName);
 

@@ -73,6 +73,8 @@ abstract class AbstractProcessor extends BaseAbstractProcessor
     /**
      * Builds an ObjectIterator from the given query builder.
      * Allow to make some final/general customization of the query, before firing it to the database engine.
+     *
+     * @return ObjectIteratorInterface<mixed>
      */
     abstract protected function buildIterator(object $queryBuilder, Query $result): ObjectIteratorInterface;
 

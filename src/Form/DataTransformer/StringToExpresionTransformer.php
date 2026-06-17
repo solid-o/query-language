@@ -12,6 +12,7 @@ use Symfony\Component\Form\Exception\TransformationFailedException;
 
 use function is_string;
 
+/** @implements DataTransformerInterface<mixed, mixed> */
 class StringToExpresionTransformer implements DataTransformerInterface
 {
     private Grammar $grammar;

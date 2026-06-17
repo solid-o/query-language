@@ -30,7 +30,7 @@ use function explode;
 
 class NodeWalker extends AbstractWalker
 {
-    private const COMPARISON_MAP = [
+    private const array COMPARISON_MAP = [
         '=' => QOMConstants::JCR_OPERATOR_EQUAL_TO,
         '<' => QOMConstants::JCR_OPERATOR_LESS_THAN,
         '<=' => QOMConstants::JCR_OPERATOR_LESS_THAN_OR_EQUAL_TO,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Tests\Grammar;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Solido\QueryLanguage\Exception\SyntaxError;
 use Solido\QueryLanguage\Expression;
@@ -22,17 +23,13 @@ class GrammarTest extends TestCase
         $this->grammar = new Grammar();
     }
 
-    /**
-     * @dataProvider provideExpressions
-     */
+    #[DataProvider('provideExpressions')]
     public function testParse(string $query, Expression\ExpressionInterface $expected): void
     {
         $this->assertDumpEquals($this->getDump($expected), $this->grammar->parse($query));
     }
 
-    /**
-     * @dataProvider provideExpressions
-     */
+    #[DataProvider('provideExpressions')]
     public function testParseWithCache(string $query, Expression\ExpressionInterface $expected): void
     {
         $this->grammar = new Grammar(new ArrayAdapter(3600));
@@ -151,9 +148,7 @@ class GrammarTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideInvalidExpressions
-     */
+    #[DataProvider('provideInvalidExpressions')]
     public function testParseShouldThrowOnInvalidSyntax(string $query): void
     {
         $this->expectException(SyntaxError::class);

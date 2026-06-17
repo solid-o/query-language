@@ -33,8 +33,8 @@ use function str_contains;
 /** @internal */
 class Field implements FieldInterface
 {
-    public const TO_MANY_STRATEGY_SPLIT = 'split';
-    public const TO_MANY_STRATEGY_SHARED = 'shared';
+    public const string TO_MANY_STRATEGY_SPLIT = 'split';
+    public const string TO_MANY_STRATEGY_SHARED = 'shared';
 
     private string $fieldType;
     private string $aliasSuffix;
@@ -57,6 +57,7 @@ class Field implements FieldInterface
 
     public bool $discriminator;
 
+    /** @phpstan-param ClassMetadata<object> $rootEntity */
     public function __construct(
         public string $fieldName,
         private readonly string $rootAlias,
@@ -374,6 +375,8 @@ class Field implements FieldInterface
     /**
      * Checks if the field name is a discriminator field name.
      */
+
+    /** @phpstan-param ClassMetadata<object> $rootEntity */
     private function searchForDiscriminator(ClassMetadata $rootEntity, string $fieldName): void
     {
         if (! isset($rootEntity->discriminatorColumn['name']) || $fieldName !== $rootEntity->discriminatorColumn['name']) {
