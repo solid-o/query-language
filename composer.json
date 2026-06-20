@@ -23,8 +23,8 @@
         "symfony/form": "^7.4 || ^8.0",
         "symfony/validator": "^7.4 || ^8.0",
         "symfony/http-foundation": "^7.4 || ^8.0",
-        "solido/common": "^0.4 || ^0.5",
-        "solido/pagination": "^0.4 || ^0.5@dev"
+        "solido/common": "^0.5",
+        "solido/pagination": "^0.5"
     },
     "require-dev": {
         "doctrine/annotations": "^1.10 || ^2.0",
@@ -34,7 +34,7 @@
         "doctrine/phpcr-odm": "^1.5 || ^2.0",
         "friendsofphp/php-cs-fixer": "^v3.35",
         "friendsofphp/proxy-manager-lts": "^1.0",
-        "jackalope/jackalope-doctrine-dbal": "^1.4",
+        "jackalope/jackalope-doctrine-dbal": "^1.4 || ^2.0",
         "myclabs/php-enum": "^1.7",
         "phpspec/prophecy-phpunit": "^2.0",
         "phpunit/phpunit": "^11.0 || ^12.0",

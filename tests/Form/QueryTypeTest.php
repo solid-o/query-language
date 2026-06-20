@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Solido\QueryLanguage\Tests\Form;
 
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Solido\QueryLanguage\Form\DTO\Query;
 use Solido\QueryLanguage\Form\QueryType;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
@@ -20,6 +21,7 @@ class QueryTypeTest extends TypeTestCase
         return new ValidatorExtension(Validation::createValidator());
     }
 
+    #[AllowMockObjectsWithoutExpectations]
     public function testShouldNotAllowNegativeSkip(): void
     {
         $form = $this->factory->createNamed('', QueryType::class, $query = new Query(), [
@@ -31,6 +33,7 @@ class QueryTypeTest extends TypeTestCase
         self::assertFalse($form->isValid());
     }
 
+    #[AllowMockObjectsWithoutExpectations]
     public function testShouldNotAllowNegativeLimit(): void
     {
         $form = $this->factory->createNamed('', QueryType::class, $query = new Query(), [
@@ -42,6 +45,7 @@ class QueryTypeTest extends TypeTestCase
         self::assertFalse($form->isValid());
     }
 
+    #[AllowMockObjectsWithoutExpectations]
     public function testShouldAcceptSkipAndLimit(): void
     {
         $form = $this->factory->createNamed('', QueryType::class, $query = new Query(), [
